@@ -1,0 +1,6854 @@
+[
+  {
+    "name": "usuario",
+    "tenant": false,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "proveedor_identidad",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "identificador_externo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "email",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "activo",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "organizacion",
+    "tenant": false,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "identificacion_fiscal",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado",
+        "type": "text",
+        "nullable": false,
+        "default": "'activa'",
+        "enum": [
+          "activa",
+          "suspendida",
+          "inactiva"
+        ]
+      },
+      {
+        "name": "zona_horaria_default",
+        "type": "text",
+        "nullable": false,
+        "default": "'America/Bogota'",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "sede",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "codigo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "direccion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "telefono",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "zona_horaria",
+        "type": "text",
+        "nullable": false,
+        "default": "'America/Bogota'",
+        "enum": []
+      },
+      {
+        "name": "activa",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "membresia",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "usuario_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "activo",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "usuario_id"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "profesional",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "membresia_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre_profesional",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "registro_profesional",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "especialidad",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "membresia_id"
+        ],
+        "target": "membresia",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "rol",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "descripcion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "permiso",
+    "tenant": false,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "codigo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "descripcion",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "rol_permiso",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "rol_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "permiso_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "rol_id"
+        ],
+        "target": "rol",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "permiso_id"
+        ],
+        "target": "permiso",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "asignacion_rol",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "membresia_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "rol_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "sede_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "membresia_id"
+        ],
+        "target": "membresia",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "rol_id"
+        ],
+        "target": "rol",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "sede_id"
+        ],
+        "target": "sede",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "archivo",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "proveedor",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": [
+          "minio",
+          "local"
+        ]
+      },
+      {
+        "name": "contenedor",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "ruta_relativa",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version_objeto",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre_original",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "mime_detectado",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tamano_bytes",
+        "type": "bigint",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "sha256",
+        "type": "char(64)",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "categoria",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado_analisis",
+        "type": "text",
+        "nullable": false,
+        "default": "'pendiente'",
+        "enum": [
+          "pendiente",
+          "disponible",
+          "rechazado"
+        ]
+      },
+      {
+        "name": "cargado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "tutor",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombres",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "apellidos",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "pais_documento",
+        "type": "char(2)",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tipo_documento",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "numero_documento",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "email",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "direccion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "ciudad",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "observaciones",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "activo",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "telefono_tutor",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tutor_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "numero",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tipo",
+        "type": "text",
+        "nullable": false,
+        "default": "'movil'",
+        "enum": [
+          "movil",
+          "fijo",
+          "otro"
+        ]
+      },
+      {
+        "name": "principal",
+        "type": "boolean",
+        "nullable": false,
+        "default": "false",
+        "enum": []
+      },
+      {
+        "name": "permite_mensajeria",
+        "type": "boolean",
+        "nullable": false,
+        "default": "false",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "tutor_id"
+        ],
+        "target": "tutor",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "preferencia_comunicacion",
+    "tenant": true,
+    "mutable": false,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tutor_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "canal",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": [
+          "email",
+          "sms",
+          "whatsapp",
+          "push",
+          "telefono"
+        ]
+      },
+      {
+        "name": "finalidad",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": [
+          "aceptada",
+          "revocada"
+        ]
+      },
+      {
+        "name": "registrada_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "fuente",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "evidencia_archivo_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "tutor_id"
+        ],
+        "target": "tutor",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "evidencia_archivo_id"
+        ],
+        "target": "archivo",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "especie",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "activa",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "raza",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "especie_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "activa",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "especie_id"
+        ],
+        "target": "especie",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "mascota",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "codigo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "especie_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "raza_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "sexo",
+        "type": "text",
+        "nullable": false,
+        "default": "'desconocido'",
+        "enum": [
+          "macho",
+          "hembra",
+          "desconocido"
+        ]
+      },
+      {
+        "name": "fecha_nacimiento",
+        "type": "date",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nacimiento_estimado",
+        "type": "boolean",
+        "nullable": false,
+        "default": "false",
+        "enum": []
+      },
+      {
+        "name": "color",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "microchip",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "esterilizada",
+        "type": "boolean",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "foto_archivo_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado",
+        "type": "text",
+        "nullable": false,
+        "default": "'activa'",
+        "enum": [
+          "activa",
+          "inactiva",
+          "fallecida"
+        ]
+      },
+      {
+        "name": "fecha_fallecimiento",
+        "type": "date",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "especie_id"
+        ],
+        "target": "especie",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "especie_id",
+          "raza_id"
+        ],
+        "target": "raza",
+        "targetColumns": [
+          "organizacion_id",
+          "especie_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "foto_archivo_id"
+        ],
+        "target": "archivo",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "mascota_tutor",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "mascota_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tutor_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "relacion",
+        "type": "text",
+        "nullable": false,
+        "default": "'tutor'",
+        "enum": []
+      },
+      {
+        "name": "es_principal",
+        "type": "boolean",
+        "nullable": false,
+        "default": "false",
+        "enum": []
+      },
+      {
+        "name": "autorizado_consentir",
+        "type": "boolean",
+        "nullable": false,
+        "default": "false",
+        "enum": []
+      },
+      {
+        "name": "vigente_desde",
+        "type": "date",
+        "nullable": false,
+        "default": "CURRENT_DATE",
+        "enum": []
+      },
+      {
+        "name": "vigente_hasta",
+        "type": "date",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id"
+        ],
+        "target": "mascota",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "tutor_id"
+        ],
+        "target": "tutor",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "alerta_mascota",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "mascota_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tipo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "descripcion",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "severidad",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": [
+          "informativa",
+          "moderada",
+          "critica"
+        ]
+      },
+      {
+        "name": "activa",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "detectada_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "resuelta_en",
+        "type": "timestamptz",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id"
+        ],
+        "target": "mascota",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "laboratorio",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "contacto",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "activo",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "medicamento",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre_comercial",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "principio_activo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "concentracion",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "forma_farmaceutica",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "presentacion",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "laboratorio_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "foto_archivo_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "activo",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "laboratorio_id"
+        ],
+        "target": "laboratorio",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "foto_archivo_id"
+        ],
+        "target": "archivo",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "vacuna",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "laboratorio_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "presentacion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "activo",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "laboratorio_id"
+        ],
+        "target": "laboratorio",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "vacunacion",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "mascota_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "sede_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "vacuna_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "aplicada_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "origen",
+        "type": "text",
+        "nullable": false,
+        "default": "'interna'",
+        "enum": [
+          "interna",
+          "externa"
+        ]
+      },
+      {
+        "name": "peso_kg",
+        "type": "numeric(7,3)",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "aplicada_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "vacunador_externo",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "procedencia_externa",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "lote",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "vencimiento_lote",
+        "type": "date",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "dosis",
+        "type": "numeric(8,3)",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "unidad_dosis",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "via",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "descripcion_vacuna_emitida",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "observaciones",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado",
+        "type": "text",
+        "nullable": false,
+        "default": "'aplicada'",
+        "enum": [
+          "aplicada",
+          "anulada"
+        ]
+      },
+      {
+        "name": "motivo_anulacion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "reemplaza_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id"
+        ],
+        "target": "mascota",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "sede_id"
+        ],
+        "target": "sede",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "vacuna_id"
+        ],
+        "target": "vacuna",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "aplicada_por"
+        ],
+        "target": "profesional",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id",
+          "reemplaza_id"
+        ],
+        "target": "vacunacion",
+        "targetColumns": [
+          "organizacion_id",
+          "mascota_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "pendiente_vacunal",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "mascota_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "vacunacion_origen_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "vacuna_prevista_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "indicacion",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "fecha_objetivo",
+        "type": "date",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado",
+        "type": "text",
+        "nullable": false,
+        "default": "'pendiente'",
+        "enum": [
+          "pendiente",
+          "cumplido",
+          "cancelado"
+        ]
+      },
+      {
+        "name": "vacunacion_cumplimiento_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id"
+        ],
+        "target": "mascota",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "vacuna_prevista_id"
+        ],
+        "target": "vacuna",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id",
+          "vacunacion_origen_id"
+        ],
+        "target": "vacunacion",
+        "targetColumns": [
+          "organizacion_id",
+          "mascota_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id",
+          "vacunacion_cumplimiento_id"
+        ],
+        "target": "vacunacion",
+        "targetColumns": [
+          "organizacion_id",
+          "mascota_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "cita",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "mascota_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "sede_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tutor_contacto_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tipo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": [
+          "clinica",
+          "vacunacion",
+          "peluqueria"
+        ]
+      },
+      {
+        "name": "inicio",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "fin",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "responsable_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "pendiente_vacunal_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado",
+        "type": "text",
+        "nullable": false,
+        "default": "'programada'",
+        "enum": [
+          "programada",
+          "confirmada",
+          "en_atencion",
+          "completada",
+          "cancelada",
+          "no_asistio"
+        ]
+      },
+      {
+        "name": "notas",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id"
+        ],
+        "target": "mascota",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "sede_id"
+        ],
+        "target": "sede",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "tutor_contacto_id"
+        ],
+        "target": "tutor",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "responsable_id"
+        ],
+        "target": "membresia",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id",
+          "pendiente_vacunal_id"
+        ],
+        "target": "pendiente_vacunal",
+        "targetColumns": [
+          "organizacion_id",
+          "mascota_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "recordatorio",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tutor_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "cita_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "pendiente_vacunal_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "canal",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": [
+          "email",
+          "sms",
+          "whatsapp",
+          "push"
+        ]
+      },
+      {
+        "name": "programado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "enviado_en",
+        "type": "timestamptz",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado",
+        "type": "text",
+        "nullable": false,
+        "default": "'pendiente'",
+        "enum": [
+          "pendiente",
+          "procesando",
+          "enviado",
+          "fallido",
+          "cancelado"
+        ]
+      },
+      {
+        "name": "intentos",
+        "type": "integer",
+        "nullable": false,
+        "default": "0",
+        "enum": []
+      },
+      {
+        "name": "clave_idempotencia",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "referencia_proveedor",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "tutor_id"
+        ],
+        "target": "tutor",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "cita_id"
+        ],
+        "target": "cita",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "pendiente_vacunal_id"
+        ],
+        "target": "pendiente_vacunal",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "atencion_clinica",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "mascota_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "sede_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "cita_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "fecha_atencion",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "profesional_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tutor_presente_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado",
+        "type": "text",
+        "nullable": false,
+        "default": "'abierta'",
+        "enum": [
+          "abierta",
+          "cerrada",
+          "anulada"
+        ]
+      },
+      {
+        "name": "motivo_anulacion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id"
+        ],
+        "target": "mascota",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "sede_id"
+        ],
+        "target": "sede",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "profesional_id"
+        ],
+        "target": "profesional",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "tutor_presente_id"
+        ],
+        "target": "tutor",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id",
+          "sede_id",
+          "cita_id"
+        ],
+        "target": "cita",
+        "targetColumns": [
+          "organizacion_id",
+          "mascota_id",
+          "sede_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "revision_clinica",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "atencion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "numero",
+        "type": "integer",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "revision_previa_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "motivo_cambio",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "motivo_consulta",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "anamnesis",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "evaluacion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "plan",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado",
+        "type": "text",
+        "nullable": false,
+        "default": "'borrador'",
+        "enum": [
+          "borrador",
+          "cerrada"
+        ]
+      },
+      {
+        "name": "cerrada_en",
+        "type": "timestamptz",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "cerrada_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "atencion_id"
+        ],
+        "target": "atencion_clinica",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "atencion_id",
+          "revision_previa_id"
+        ],
+        "target": "revision_clinica",
+        "targetColumns": [
+          "organizacion_id",
+          "atencion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "cerrada_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "tipo_seccion_clinica",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "codigo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "orden",
+        "type": "integer",
+        "nullable": false,
+        "default": "0",
+        "enum": []
+      },
+      {
+        "name": "activo",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "plantilla_seccion",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tipo_seccion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "numero_version",
+        "type": "integer",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "esquema_validacion",
+        "type": "jsonb",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "publicada_en",
+        "type": "timestamptz",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "tipo_seccion_id"
+        ],
+        "target": "tipo_seccion_clinica",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "seccion_clinica",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "revision_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tipo_seccion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "plantilla_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado_evaluacion",
+        "type": "text",
+        "nullable": false,
+        "default": "'no_evaluado'",
+        "enum": [
+          "no_evaluado",
+          "sin_hallazgos",
+          "con_hallazgos"
+        ]
+      },
+      {
+        "name": "hallazgos",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "datos_estructurados",
+        "type": "jsonb",
+        "nullable": false,
+        "default": "'{}'::jsonb",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "revision_id"
+        ],
+        "target": "revision_clinica",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "tipo_seccion_id",
+          "plantilla_id"
+        ],
+        "target": "plantilla_seccion",
+        "targetColumns": [
+          "organizacion_id",
+          "tipo_seccion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "medicion_clinica",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "revision_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tipo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "valor",
+        "type": "numeric(10,3)",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "unidad",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "medida_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "revision_id"
+        ],
+        "target": "revision_clinica",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "diagnostico",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "codigo",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "sistema_codificacion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "activo",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "diagnostico_atencion",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "revision_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "diagnostico_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "clasificacion",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": [
+          "presuntivo",
+          "confirmado",
+          "descartado"
+        ]
+      },
+      {
+        "name": "observaciones",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "revision_id"
+        ],
+        "target": "revision_clinica",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "diagnostico_id"
+        ],
+        "target": "diagnostico",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "prescripcion",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "revision_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "profesional_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "emitida_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "indicaciones_generales",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "revision_id"
+        ],
+        "target": "revision_clinica",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "profesional_id"
+        ],
+        "target": "profesional",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "prescripcion_item",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "prescripcion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "medicamento_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "descripcion_emitida",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "dosis",
+        "type": "numeric(12,4)",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "unidad_dosis",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "via",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "frecuencia",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "duracion",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "cantidad",
+        "type": "numeric(12,3)",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "instrucciones",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "prescripcion_id"
+        ],
+        "target": "prescripcion",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "medicamento_id"
+        ],
+        "target": "medicamento",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "tipo_servicio",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "descripcion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "duracion_estimada_min",
+        "type": "integer",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "activo",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "servicio_peluqueria",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "mascota_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "sede_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "cita_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "fecha_servicio",
+        "type": "date",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "llegada_en",
+        "type": "timestamptz",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "inicio_en",
+        "type": "timestamptz",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "finalizado_en",
+        "type": "timestamptz",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "entregado_en",
+        "type": "timestamptz",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "responsable_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tutor_contacto_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "telefono_contacto_servicio",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "requiere_consentimiento",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "observaciones_ingreso",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "incidentes",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado",
+        "type": "text",
+        "nullable": false,
+        "default": "'programado'",
+        "enum": [
+          "programado",
+          "recibido",
+          "en_servicio",
+          "finalizado",
+          "entregado",
+          "cancelado"
+        ]
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id"
+        ],
+        "target": "mascota",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "sede_id"
+        ],
+        "target": "sede",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "responsable_id"
+        ],
+        "target": "membresia",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "tutor_contacto_id"
+        ],
+        "target": "tutor",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id",
+          "sede_id",
+          "cita_id"
+        ],
+        "target": "cita",
+        "targetColumns": [
+          "organizacion_id",
+          "mascota_id",
+          "sede_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "peluqueria_item",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "servicio_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tipo_servicio_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "instrucciones",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "servicio_id"
+        ],
+        "target": "servicio_peluqueria",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "tipo_servicio_id"
+        ],
+        "target": "tipo_servicio",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "plantilla_consentimiento",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "nombre",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "numero_version",
+        "type": "integer",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "contenido",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "publicada_en",
+        "type": "timestamptz",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "activa",
+        "type": "boolean",
+        "nullable": false,
+        "default": "true",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "consentimiento",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "servicio_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "plantilla_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "documento_archivo_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "hash_documento",
+        "type": "char(64)",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "estado",
+        "type": "text",
+        "nullable": false,
+        "default": "'pendiente'",
+        "enum": [
+          "pendiente",
+          "aceptado",
+          "rechazado",
+          "revocado"
+        ]
+      },
+      {
+        "name": "emitido_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "servicio_id"
+        ],
+        "target": "servicio_peluqueria",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "plantilla_id"
+        ],
+        "target": "plantilla_consentimiento",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "documento_archivo_id"
+        ],
+        "target": "archivo",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "firma_consentimiento",
+    "tenant": true,
+    "mutable": false,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "consentimiento_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tutor_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "identidad_firmante_snapshot",
+        "type": "jsonb",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "firmado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "metodo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": [
+          "presencial_digital",
+          "documento_escaneado",
+          "firma_electronica"
+        ]
+      },
+      {
+        "name": "evidencia_archivo_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "hash_documento_aceptado",
+        "type": "char(64)",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "consentimiento_id",
+          "hash_documento_aceptado"
+        ],
+        "target": "consentimiento",
+        "targetColumns": [
+          "organizacion_id",
+          "id",
+          "hash_documento"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "tutor_id"
+        ],
+        "target": "tutor",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "evidencia_archivo_id"
+        ],
+        "target": "archivo",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "adjunto_clinico",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "revision_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "archivo_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "descripcion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "revision_id"
+        ],
+        "target": "revision_clinica",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "archivo_id"
+        ],
+        "target": "archivo",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "adjunto_vacunacion",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "vacunacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "archivo_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "descripcion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "vacunacion_id"
+        ],
+        "target": "vacunacion",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "archivo_id"
+        ],
+        "target": "archivo",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "adjunto_peluqueria",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "servicio_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "archivo_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "descripcion",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "servicio_id"
+        ],
+        "target": "servicio_peluqueria",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "archivo_id"
+        ],
+        "target": "archivo",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "reporte_emitido",
+    "tenant": true,
+    "mutable": false,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "mascota_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tipo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "parametros",
+        "type": "jsonb",
+        "nullable": false,
+        "default": "'{}'::jsonb",
+        "enum": []
+      },
+      {
+        "name": "datos_identificacion_snapshot",
+        "type": "jsonb",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "fuentes_versionadas",
+        "type": "jsonb",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version_plantilla",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "archivo_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "emitido_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "emitido_por",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "mascota_id"
+        ],
+        "target": "mascota",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "archivo_id"
+        ],
+        "target": "archivo",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "emitido_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "evento_auditoria",
+    "tenant": true,
+    "mutable": false,
+    "audit": false,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actor_usuario_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actor_servicio",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "accion",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "entidad",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "registro_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "ocurrido_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "clock_timestamp()",
+        "enum": []
+      },
+      {
+        "name": "campos_modificados",
+        "type": "jsonb",
+        "nullable": false,
+        "default": "'[]'::jsonb",
+        "enum": []
+      },
+      {
+        "name": "motivo",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "request_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "ip",
+        "type": "inet",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actor_usuario_id"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "evento_salida",
+    "tenant": true,
+    "mutable": true,
+    "audit": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid",
+        "nullable": false,
+        "default": "gen_random_uuid()",
+        "enum": []
+      },
+      {
+        "name": "organizacion_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "tipo",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "entidad_id",
+        "type": "uuid",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "payload",
+        "type": "jsonb",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "procesado_en",
+        "type": "timestamptz",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "intentos",
+        "type": "integer",
+        "nullable": false,
+        "default": "0",
+        "enum": []
+      },
+      {
+        "name": "clave_idempotencia",
+        "type": "text",
+        "nullable": false,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "creado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "creado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "actualizado_en",
+        "type": "timestamptz",
+        "nullable": false,
+        "default": "now()",
+        "enum": []
+      },
+      {
+        "name": "actualizado_por",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "version",
+        "type": "integer",
+        "nullable": false,
+        "default": "1",
+        "enum": []
+      }
+    ],
+    "refs": [
+      {
+        "columns": [
+          "organizacion_id"
+        ],
+        "target": "organizacion",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "creado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "actualizado_por"
+        ],
+        "target": "usuario",
+        "targetColumns": [
+          "id"
+        ]
+      }
+    ]
+  }
+]

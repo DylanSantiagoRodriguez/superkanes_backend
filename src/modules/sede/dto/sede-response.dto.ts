@@ -1,0 +1,59 @@
+import { ApiProperty } from '@nestjs/swagger';
+export class SedeResponseDto {
+  @ApiProperty({
+    required: false,
+    nullable: false,
+    type: 'string',
+    format: 'uuid',
+  })
+  id!: string;
+  @ApiProperty({
+    required: true,
+    nullable: false,
+    type: 'string',
+    format: 'uuid',
+  })
+  organizacion_id!: string;
+  @ApiProperty({ required: true, nullable: false, type: 'string' })
+  nombre!: string;
+  @ApiProperty({ required: true, nullable: false, type: 'string' })
+  codigo!: string;
+  @ApiProperty({ required: false, nullable: true, type: 'string' })
+  direccion!: string | null;
+  @ApiProperty({ required: false, nullable: true, type: 'string' })
+  telefono!: string | null;
+  @ApiProperty({ required: false, nullable: false, type: 'string' })
+  zona_horaria!: string;
+  @ApiProperty({ required: false, nullable: false, type: 'boolean' })
+  activa!: boolean;
+  @ApiProperty({
+    required: false,
+    nullable: false,
+    type: 'string',
+    format: 'date-time',
+  })
+  creado_en!: string;
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    type: 'string',
+    format: 'uuid',
+  })
+  creado_por!: string | null;
+  @ApiProperty({
+    required: false,
+    nullable: false,
+    type: 'string',
+    format: 'date-time',
+  })
+  actualizado_en!: string;
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    type: 'string',
+    format: 'uuid',
+  })
+  actualizado_por!: string | null;
+  @ApiProperty({ required: false, nullable: false, type: 'number' })
+  version!: number;
+}

@@ -1,7 +1,5 @@
 # Repositorio exclusivo del backend. Se conserva este archivo de reglas.
-/*
-!/.gitignore
-!/backend/
+
 
 # Dependencias y archivos generados del backend.
 node_modules/
@@ -22,6 +20,3 @@ coverage/
 Thumbs.db
 .idea/
 .vscode/
-./dist/
-./node_modules/
-scripts/
