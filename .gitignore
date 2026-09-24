@@ -1,0 +1,27 @@
+# Repositorio exclusivo del backend. Se conserva este archivo de reglas.
+/*
+!/.gitignore
+!/backend/
+
+# Dependencias y archivos generados del backend.
+node_modules/
+dist/
+coverage/
+.cache/
+.nyc_output/
+*.log
+*.tsbuildinfo
+
+# Secretos locales; las plantillas de entorno se pueden versionar.
+.env
+.env.*
+!.env.example
+
+# Archivos del sistema y del editor.
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+./dist/
+./node_modules/
+scripts/
