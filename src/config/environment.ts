@@ -51,7 +51,7 @@ export function validateEnvironment(input: Record<string, unknown>) {
   }
   return {
     ...input,
-    ...validateAuth(input, environment),
+    ...validateAuth(input),
     NODE_ENV: environment,
     PORT: integer('PORT', '3000', 65535),
     DB_HOST: text('DB_HOST', '127.0.0.1'),
@@ -64,30 +64,29 @@ export function validateEnvironment(input: Record<string, unknown>) {
   };
 }
 
-function validateAuth(input: Record<string, unknown>, environment: string) {
-  const keys = ['AUTH_ISSUER', 'AUTH_AUDIENCE', 'AUTH_JWKS_URI'];
-  const values = keys.map((key) =>
-    typeof input[key] === 'string' ? input[key].trim() : '',
-  );
-  if (values.some(Boolean) && !values.every(Boolean))
+function validateAuth(input: Record<string, unknown>) {
+  const secret =
+    typeof input.AUTH_JWT_SECRET === 'string'
+      ? input.AUTH_JWT_SECRET.trim()
+      : '';
+  if (
+    !/^[A-Za-z0-9+/]{86}==$/.test(secret) ||
+    Buffer.from(secret, 'base64').length !== 64
+  )
     throw new Error(
-      'Configure AUTH_ISSUER, AUTH_AUDIENCE y AUTH_JWKS_URI juntos',
+      'AUTH_JWT_SECRET requiere 64 bytes aleatorios en base64; ejecute auth:setup',
     );
-  if (values.every(Boolean)) {
-    for (const value of [values[0], values[2]]) {
-      const url = new URL(value);
-      if (
-        url.username ||
-        url.password ||
-        url.hash ||
-        !['https:', 'http:'].includes(url.protocol)
-      )
-        throw new Error('URL de autenticacion invalida');
-      if (environment === 'production' && url.protocol !== 'https:')
-        throw new Error('Autenticacion requiere HTTPS en produccion');
-    }
-  }
-  return Object.fromEntries(
-    keys.map((key, index) => [key, values[index] || undefined]),
-  );
+  const issuer =
+    typeof input.AUTH_ISSUER === 'string' && input.AUTH_ISSUER.trim()
+      ? input.AUTH_ISSUER.trim()
+      : 'superkanes-api';
+  const audience =
+    typeof input.AUTH_AUDIENCE === 'string' && input.AUTH_AUDIENCE.trim()
+      ? input.AUTH_AUDIENCE.trim()
+      : 'superkanes-clients';
+  return {
+    AUTH_JWT_SECRET: secret,
+    AUTH_ISSUER: issuer,
+    AUTH_AUDIENCE: audience,
+  };
 }

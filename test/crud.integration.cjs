@@ -1,7 +1,6 @@
 // HTTP real, JWT firmado y PostgreSQL aislado. No usa datos de clientes.
 const assert = require('node:assert/strict');
-const { randomUUID } = require('node:crypto');
-const http = require('node:http');
+const { randomUUID, randomBytes } = require('node:crypto');
 const { DataSource } = require('typeorm');
 const source = require('../dist/database/migration-data-source').default;
 const { resources } = require('../dist/resources/resource-registry');
@@ -18,15 +17,14 @@ async function main() {
     owner = new DataSource({ ...source.options, database: name, logging: false });
     await owner.initialize();
     await owner.runMigrations();
-    const { generateKeyPair, exportJWK, SignJWT } = await import('jose');
-    const { publicKey, privateKey } = await generateKeyPair('RS256');
-    const key = { ...await exportJWK(publicKey), kid: 'integration', alg: 'RS256', use: 'sig' };
-    jwks = http.createServer((_req, res) => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ keys: [key] })); });
-    await new Promise(resolve => jwks.listen(0, '127.0.0.1', resolve));
-    const issuer = `http://127.0.0.1:${jwks.address().port}`;
-    Object.assign(process.env, { NODE_ENV: 'test', POSTGRES_DB: name, DB_HOST: '127.0.0.1', AUTH_ISSUER: issuer, AUTH_AUDIENCE: 'integration', AUTH_JWKS_URI: `${issuer}/jwks`, AUTH_PLATFORM_SUBJECTS: 'root', SWAGGER_ENABLED: 'true' });
+    const { SignJWT } = await import('jose');
+    const { PasswordService } = require('../dist/auth/password.service');
+    const passwordHash = await new PasswordService().hash('Clave sintetica para pruebas 2026!');
+    const signingKey = randomBytes(64);
+    const issuer = 'local';
+    Object.assign(process.env, { NODE_ENV:'test', POSTGRES_DB:name, DB_HOST:'127.0.0.1', AUTH_ISSUER:'integration-api', AUTH_AUDIENCE:'integration', AUTH_JWT_SECRET:signingKey.toString('base64'), SWAGGER_ENABLED:'true' });
     await owner.query("INSERT INTO vet.organizacion(id,nombre) VALUES($1,'Prueba A'),($2,'Prueba B')", [org, otherOrg]);
-    await owner.query("INSERT INTO vet.usuario(id,proveedor_identidad,identificador_externo,nombre,email) VALUES($1,$2,'root','Operador','root@example.test')", [user, issuer]);
+    await owner.query("INSERT INTO vet.usuario(id,proveedor_identidad,identificador_externo,nombre,email) VALUES($1::uuid,'local',$1::uuid::text,'Operador','root@example.test')", [user]);
     const { NestFactory } = require('@nestjs/core');
     const { AppModule } = require('../dist/app.module');
     const { configureApp } = require('../dist/setup-app');
@@ -34,7 +32,15 @@ async function main() {
     configureApp(app);
     await app.listen(0, '127.0.0.1');
     const base = await app.getUrl();
-    const token = async (subject = 'root', aud = 'integration', expiry = '10m') => new SignJWT({}).setProtectedHeader({ alg: 'RS256', kid: 'integration' }).setIssuer(issuer).setAudience(aud).setSubject(subject).setIssuedAt().setExpirationTime(expiry).sign(privateKey);
+    const token = async (subject = 'root', aud = 'integration', expiry = '10m') => {
+      const userId=subject==='root'?user:subject==='staff'?ids.usuario:randomUUID();
+      const sessionId=randomUUID();
+      if(subject!=='unknown') {
+        await owner.query('INSERT INTO auth.credential(usuario_id,password_hash,platform_admin) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[userId,passwordHash,subject==='root']);
+        await owner.query("INSERT INTO auth.session(id,usuario_id,credential_version,expires_at) VALUES($1,$2,1,now()+interval '1 day')",[sessionId,userId]);
+      }
+      return new SignJWT({sid:sessionId}).setProtectedHeader({alg:'HS256',typ:'at+jwt'}).setIssuer('integration-api').setAudience(aud).setSubject(userId).setJti(randomUUID()).setIssuedAt().setExpirationTime(expiry).sign(signingKey);
+    };
     const adminToken = await token();
     async function request(method, path, body, status = 200, options = {}) {
       const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}`, 'X-Organization-Id': org, ...(method === 'POST' ? { 'Idempotency-Key': randomUUID() } : {}), ...options };
@@ -53,12 +59,15 @@ async function main() {
     await request('GET', '/tutor', undefined, 401, { Authorization: '' });
     await request('GET', '/tutor', undefined, 401, { Authorization: `Bearer ${await token('root', 'wrong')}` });
     await request('GET', '/tutor', undefined, 401, { Authorization: `Bearer ${await token('root', 'integration', -60)}` });
-    await request('GET', '/tutor', undefined, 403, { Authorization: `Bearer ${await token('unknown')}` });
+    await request('GET', '/tutor', undefined, 401, { Authorization: `Bearer ${await token('unknown')}` });
     assert.equal((await request('GET', '')).resources.length, 47);
     for (const name of resources.keys()) await request('GET', `/${name}?limit=1`);
     await request('GET', '/missing', undefined, 404);
     const now = new Date().toISOString(), hash = 'a'.repeat(64);
     await create('usuario', { proveedor_identidad: issuer, identificador_externo: 'staff', nombre: 'Staff', email: 'staff@example.test' });
+    await owner.query("UPDATE vet.usuario SET identificador_externo=id::text WHERE id=$1",[ids.usuario]);
+    bodies.usuario.identificador_externo=ids.usuario;
+
     await create('organizacion', { nombre: 'Clinica creada por API' });
     await create('sede', { nombre: 'Principal', codigo: '01' });
     await create('membresia', { usuario_id: user }, 'rootMembership');

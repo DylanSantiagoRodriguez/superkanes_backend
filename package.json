@@ -31,7 +31,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:integration": "npm run build && node test/typeorm.integration.cjs",
     "test:crud": "npm run build && node test/crud.integration.cjs",
-    "admin:provision": "npm run build && node scripts/provision-admin.cjs"
+    "test:auth": "npm run build && node test/auth.integration.cjs",
+    "admin:provision": "npm run build && node scripts/provision-local-admin.cjs",
+    "auth:setup": "node scripts/setup-auth.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -42,6 +44,7 @@
     "@nestjs/throttler": "^6.7.0",
     "@nestjs/typeorm": "^11.0.3",
     "ajv": "^8.20.0",
+    "argon2": "^0.45.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "dotenv": "^18.0.3",

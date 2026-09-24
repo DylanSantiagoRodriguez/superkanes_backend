@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { DataSource } from 'typeorm';
 import { InitialSchema1790200000000 } from './migrations/1790200000000-initial-schema';
 import { SecureResourceApi1790200002000 } from './migrations/1790200002000-secure-resource-api';
+import { LocalAuth1790200003000 } from './migrations/1790200003000-local-auth';
 
 config({
   path: [resolve(process.cwd(), '.env'), resolve(process.cwd(), '../.env')],
@@ -32,7 +33,11 @@ export default new DataSource({
   migrationsRun: false,
   migrationsTableName: 'typeorm_migrations',
   migrationsTransactionMode: 'all',
-  migrations: [InitialSchema1790200000000, SecureResourceApi1790200002000],
+  migrations: [
+    InitialSchema1790200000000,
+    SecureResourceApi1790200002000,
+    LocalAuth1790200003000,
+  ],
   logging: ['error', 'migration'],
   extra: { max: 1, connectionTimeoutMillis: 10000 },
 });

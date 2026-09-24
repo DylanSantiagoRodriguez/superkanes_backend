@@ -10,6 +10,7 @@ export function configureApp(app: INestApplication): void {
   app.enableCors({
     origin: config.getOrThrow<string[]>('CORS_ORIGINS'),
     exposedHeaders: ['ETag'],
+    credentials: true,
   });
   app.useGlobalPipes(
     new ValidationPipe({
@@ -22,7 +23,7 @@ export function configureApp(app: INestApplication): void {
     const document = new DocumentBuilder()
       .setTitle('Superkanes API')
       .setDescription(
-        'API protegida por OIDC, permisos por recurso y clinica. Las operaciones inmutables no admiten edicion o borrado.',
+        'Ingreso con correo y contrasena, JWT y sesiones revocables. Permisos por recurso y clinica.',
       )
       .addBearerAuth()
       .setVersion('0.1.0')

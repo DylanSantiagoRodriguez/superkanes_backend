@@ -19,6 +19,8 @@ export class DatabaseService {
         AND NOT r.rolsuper AND NOT r.rolbypassrls
         AND to_regclass('vet.mascota') IS NOT NULL
         AND to_regclass('vet.revision_clinica') IS NOT NULL
+        AND to_regclass('auth.credential') IS NOT NULL
+        AND to_regclass('auth.session') IS NOT NULL
         AND to_regclass('vet.evento_auditoria') IS NOT NULL AS ready
       FROM pg_roles r WHERE r.rolname = current_user
     `);
