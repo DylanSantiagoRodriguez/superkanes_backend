@@ -20,3 +20,9 @@ coverage/
 Thumbs.db
 .idea/
 .vscode/
+scripts/generate-resource-model.py
+AUTENTICACION.md
+MODULOS.md
+CRUD.md
+CRUD_RECURSOS.md
+MIGRATIONS.md
