@@ -1,3 +1,4 @@
+import { CreateAtencionHistoriaDto } from './dto/create-atencion-historia.dto';
 import {
   Controller,
   Get,
@@ -63,6 +64,33 @@ export class AtencionClinicaController {
       uuid(org, 'X-Organization-Id'),
       query,
     );
+  }
+
+  @Get('autor')
+  author(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+  ) {
+    return this.service.author(req.identity, uuid(org, 'X-Organization-Id'));
+  }
+
+  @Post('con-historia')
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  async createWithHistory(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+    @Body() dto: CreateAtencionHistoriaDto,
+    @Headers('idempotency-key') key: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.service.createWithHistory(
+      req.identity,
+      uuid(org, 'X-Organization-Id'),
+      dto,
+      uuid(key, 'Idempotency-Key'),
+    );
+    res.setHeader('ETag', `"${String(result.data.version)}"`);
+    return result;
   }
 
   @Get(':id')

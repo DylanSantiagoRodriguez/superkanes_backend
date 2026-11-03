@@ -60,7 +60,27 @@ async function main() {
     await request('GET', '/tutor', undefined, 401, { Authorization: `Bearer ${await token('root', 'wrong')}` });
     await request('GET', '/tutor', undefined, 401, { Authorization: `Bearer ${await token('root', 'integration', -60)}` });
     await request('GET', '/tutor', undefined, 401, { Authorization: `Bearer ${await token('unknown')}` });
-    assert.equal((await request('GET', '')).resources.length, 47);
+    const catalog = (await request('GET', '')).resources;
+    assert.equal(catalog.length, 47);
+    const tutorContract = catalog.find(r => r.name === 'tutor');
+    assert.deepEqual(tutorContract.permissions, {create:true,update:true,delete:true});
+    assert.equal(tutorContract.fields.find(f => f.name === 'nombres').required, true);
+    assert.equal(tutorContract.fields.find(f => f.name === 'id').create, false);
+    const petContract = catalog.find(r => r.name === 'mascota');
+    assert.deepEqual(petContract.fields.find(f => f.name === 'especie_id').reference, {resource:'especie',field:'id'});
+    assert.equal(petContract.fields.find(f => f.name === 'tutor_principal_id').required, true);
+    checks++;
+    assert.equal(catalog.find(r => r.name === 'mascota_tutor').fields.find(f => f.name === 'mascota_id').update, false);
+    assert.deepEqual(catalog.find(r => r.name === 'cita').transitions.completada, []);
+    checks += 6;
+    const openapi = await (await fetch(base+'/api/docs-json')).json();
+    for (const contract of catalog.filter(r => r.create)) {
+      const operation = openapi.paths['/api/v1/resources/'+contract.name].post;
+      const ref = operation.requestBody.content['application/json'].schema.$ref;
+      const schema = openapi.components.schemas[ref.split('/').at(-1)];
+      assert.deepEqual(contract.fields.filter(f => f.required && f.create).map(f => f.name).sort(), [...(schema.required ?? [])].sort(), 'Required fields: '+contract.name);
+      checks++;
+    }
     for (const name of resources.keys()) await request('GET', `/${name}?limit=1`);
     await request('GET', '/missing', undefined, 404);
     const now = new Date().toISOString(), hash = 'a'.repeat(64);
@@ -79,6 +99,10 @@ async function main() {
     await create('rol_permiso', { rol_id: ids.rol, permiso_id: readPermission.id });
     await create('asignacion_rol', { membresia_id: ids.membresia, rol_id: ids.rol });
     const staffToken = await token('staff');
+    const staffCatalog = (await request('GET', '', undefined, 200, { Authorization: `Bearer ${staffToken}` })).resources;
+    assert.deepEqual(staffCatalog.map(r => r.name), ['tutor']);
+    assert.deepEqual(staffCatalog[0].permissions, {create:false,update:false,delete:false});
+    checks += 2;
     await request('GET', '/tutor', undefined, 200, { Authorization: `Bearer ${staffToken}` });
     await request('GET', '/tutor', undefined, 403, { Authorization: `Bearer ${staffToken}`, 'X-Organization-Id': otherOrg });
     await request('POST', '/tutor', { nombres: 'No', apellidos: 'Permitido' }, 403, { Authorization: `Bearer ${staffToken}` });
@@ -89,6 +113,7 @@ async function main() {
     await create('especie', { nombre: 'Canino' });
     await create('raza', { especie_id: ids.especie, nombre: 'Mestizo' });
     await create('mascota', { codigo: 'M001', nombre: 'Luna', especie_id: ids.especie, raza_id: ids.raza, tutor_principal_id: ids.tutor });
+    await require('./pet-registration.integration.cjs')({request,owner,org,otherOrg,ids,base,adminToken,user});
     const guardians = await request('GET', `/mascota_tutor?filter=${encodeURIComponent(JSON.stringify({ mascota_id: ids.mascota }))}`);
     ids.principal = guardians.data[0].id;
     await patch('mascota_tutor', { autorizado_consentir: true }, 'principal');
@@ -104,6 +129,15 @@ async function main() {
     await create('recordatorio', { tutor_id: ids.tutor, cita_id: ids.cita, canal: 'email', programado_en: '2026-12-31T10:00:00-05:00', clave_idempotencia: randomUUID() });
     await create('atencion_clinica', { mascota_id: ids.mascota, sede_id: ids.sede, cita_id: ids.cita, fecha_atencion: now, profesional_id: ids.profesional });
     await create('revision_clinica', { atencion_id: ids.atencion_clinica, numero: 1, motivo_consulta: 'Control' });
+    const clinicalDocument = {type:'doc',content:[{type:'heading',attrs:{level:2,textAlign:'center'},content:[{type:'text',text:'Historia de Luna'}]},{type:'paragraph',content:[{type:'text',text:'Control clínico. '.repeat(8000),marks:[{type:'bold'}]}]}]};
+    const savedDocument = await patch('revision_clinica', {documento:clinicalDocument});
+    assert.deepEqual(savedDocument.data.documento, clinicalDocument);
+    assert.deepEqual((await request('GET', `/revision_clinica/${ids.revision_clinica}`)).data.documento, clinicalDocument);
+    await request('PATCH', `/revision_clinica/${ids.revision_clinica}`, {documento:null}, 412, {'If-Match':'"1"'});
+    await patch('revision_clinica', {documento:{type:'doc',content:[{type:'image',attrs:{src:'javascript:alert(1)'}}]}}, 'revision_clinica', 400);
+    await request('GET', `/revision_clinica/${ids.revision_clinica}`, undefined, 404, {'X-Organization-Id':otherOrg});
+    await require('./clinical-attention.integration.cjs')({request,owner,org,ids,staffToken,now});
+    if (process.env.TEST_STORAGE === 'true') await require('./storage.integration.cjs')({base,org,otherOrg,adminToken,staffToken,user,revisionId:ids.revision_clinica,petId:ids.mascota,request,patch});
     await create('tipo_seccion_clinica', { codigo: 'NEURO', nombre: 'Neurologia' });
     await create('plantilla_seccion', { tipo_seccion_id: ids.tipo_seccion_clinica, numero_version: 1, esquema_validacion: { type: 'object', properties: { normal: { type: 'boolean' } }, additionalProperties: false }, publicada_en: now });
     await create('seccion_clinica', { revision_id: ids.revision_clinica, tipo_seccion_id: ids.tipo_seccion_clinica, plantilla_id: ids.plantilla_seccion, datos_estructurados: { normal: true } });
@@ -154,6 +188,7 @@ async function main() {
     await patch('servicio_peluqueria', { estado: 'recibido', llegada_en: now });
     await patch('servicio_peluqueria', { estado: 'en_servicio', inicio_en: now });
     await patch('revision_clinica', { estado: 'cerrada' });
+    await patch('revision_clinica', {documento:null}, 'revision_clinica', 409);
     await patch('seccion_clinica', { hallazgos: 'Cambio tardio' }, 'seccion_clinica', 409);
     await patch('atencion_clinica', { estado: 'cerrada' });
     await patch('vacunacion', { observaciones: 'Cambio tardio' }, 'vacunacion', 409);

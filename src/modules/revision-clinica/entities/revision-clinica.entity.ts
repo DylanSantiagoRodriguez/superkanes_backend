@@ -31,6 +31,9 @@ export class RevisionClinicaEntity {
   @Column({ type: 'text', nullable: false })
   motivo_consulta!: string;
 
+  @Column({ type: 'jsonb', nullable: true })
+  documento!: Record<string, unknown> | null;
+
   @Column({ type: 'text', nullable: true })
   anamnesis!: string | null;
 

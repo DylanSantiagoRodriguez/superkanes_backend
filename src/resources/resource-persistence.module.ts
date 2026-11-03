@@ -9,6 +9,6 @@ import { ResourceRulesService } from './resource-rules.service';
     ResourceAccessService,
     ResourceRulesService,
   ],
-  exports: [ResourcePersistenceService],
+  exports: [ResourcePersistenceService, ResourceAccessService],
 })
 export class ResourcePersistenceModule {}

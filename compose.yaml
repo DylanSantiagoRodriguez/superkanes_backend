@@ -1,0 +1,110 @@
+name: superkanes
+services:
+  minio:
+    build:
+      context: .
+      dockerfile: docker/minio.Dockerfile
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Run npm run storage:setup}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Run npm run storage:setup}
+    ports:
+      - '127.0.0.1:${MINIO_PORT:-9000}:9000'
+      - '127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001'
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  minio-init:
+    build:
+      context: .
+      dockerfile: docker/mc.Dockerfile
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?Run npm run storage:setup}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?Run npm run storage:setup}
+      S3_BUCKET: ${S3_BUCKET:-superkanes}
+    volumes:
+      - ./docker/minio-init.sh:/init.sh:ro
+    entrypoint: ['/bin/sh', '/init.sh']
+    restart: 'no'
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:16-bookworm}
+    environment:
+      POSTGRES_USER: superkanes_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configure database owner password}
+      POSTGRES_DB: ${POSTGRES_DB:-superkanes}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?Configure application password}
+    ports:
+      - '127.0.0.1:${POSTGRES_DOCKER_PORT:-5433}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres-init.sh:/docker-entrypoint-initdb.d/10-app.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U superkanes_owner -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  migrate:
+    build: .
+    command: ['npm', 'run', 'migration:run:prod']
+    environment:
+      DB_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-superkanes}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+  backend:
+    build: .
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-superkanes}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:?Run npm run auth:setup}
+      AUTH_ISSUER: ${AUTH_ISSUER:-superkanes-api}
+      AUTH_AUDIENCE: ${AUTH_AUDIENCE:-superkanes-clients}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      SWAGGER_ENABLED: 'true'
+      S3_ENABLED: 'true'
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_BUCKET: ${S3_BUCKET:-superkanes}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+    ports:
+      - '127.0.0.1:${API_DOCKER_PORT:-3000}:3000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+  frontend:
+    build:
+      context: ../superkanes_frontend
+      args:
+        VITE_API_URL: /api/v1
+    ports:
+      - '127.0.0.1:${WEB_DOCKER_PORT:-5173}:80'
+    depends_on:
+      - backend
+    restart: unless-stopped
+volumes:
+  minio_data:
+  postgres_data:
+    name: ${POSTGRES_VOLUME_NAME:-superkanes_postgres_data}
+    external: ${POSTGRES_VOLUME_EXTERNAL:-false}

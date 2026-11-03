@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { ClinicalDocument1793700000000 } from './migrations/1793700000000-clinical-document';
 import { config } from 'dotenv';
 import { resolve } from 'node:path';
 import { DataSource } from 'typeorm';
@@ -37,6 +38,7 @@ export default new DataSource({
     InitialSchema1790200000000,
     SecureResourceApi1790200002000,
     LocalAuth1790200003000,
+    ClinicalDocument1793700000000,
   ],
   logging: ['error', 'migration'],
   extra: { max: 1, connectionTimeoutMillis: 10000 },

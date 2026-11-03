@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 export class RevisionClinicaResponseDto {
+  @ApiProperty({ nullable: true, type: 'object', additionalProperties: true })
+  documento!: Record<string, unknown> | null;
+
   @ApiProperty({
     required: false,
     nullable: false,

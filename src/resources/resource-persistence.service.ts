@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   HttpException,
   Injectable,
   MethodNotAllowedException,
@@ -18,8 +19,13 @@ import {
   resourceForEntity,
   resources,
   Row,
+  serverFields,
 } from './resource-registry';
-import { ResourceRulesService } from './resource-rules.service';
+import {
+  graphs,
+  immutable,
+  ResourceRulesService,
+} from './resource-rules.service';
 import {
   expectedVersion,
   listQuery,
@@ -45,6 +51,19 @@ export class ResourcePersistenceService {
     private readonly access: ResourceAccessService,
     private readonly rules: ResourceRulesService,
   ) {}
+
+  clinicalAuthor(identity: Identity, org: string) {
+    return this.access.run(identity, org, async (manager, a) => {
+      this.access.authorize(a, resource('atencion_clinica'), 'create');
+      const rows: Row[] = await manager.query(
+        `SELECT p.id,p.nombre_profesional FROM vet.profesional p
+         JOIN vet.membresia m ON m.id=p.membresia_id AND m.organizacion_id=p.organizacion_id
+         WHERE p.organizacion_id=$1 AND m.usuario_id=$2 AND m.activo`,
+        [org, a.userId],
+      );
+      return { data: rows[0] ?? null };
+    });
+  }
 
   transferGuardian(
     identity: Identity,
@@ -130,26 +149,89 @@ export class ResourcePersistenceService {
     return this.access.run(identity, org, (_manager, a) =>
       Promise.resolve({
         resources: [...resources.values()]
-          .filter((r) => a.permissions.has(`${r.name}.read`))
+          .filter((r) => this.catalogPermission(a, r, 'read'))
           .map((r) => ({
             name: r.name,
             create: r.create,
             update: r.update,
             deletion: r.deletion,
             platformWrite: r.platformWrite,
-            fields: r.columns
-              .filter(
-                (c) => !['creado_por', 'actualizado_por'].includes(c.name),
-              )
-              .map((c) => ({
-                name: c.name,
-                type: c.type,
-                nullable: c.nullable,
-                enum: c.enum,
-              })),
+            permissions: {
+              create:
+                r.create &&
+                this.catalogPermission(a, r, 'create') &&
+                (r.name !== 'mascota' ||
+                  this.catalogPermission(
+                    a,
+                    resource('mascota_tutor'),
+                    'create',
+                  )),
+              update: r.update && this.catalogPermission(a, r, 'update'),
+              delete:
+                r.deletion !== 'none' && this.catalogPermission(a, r, 'delete'),
+            },
+            deletionEffect: r.soft ?? null,
+            transitions: graphs[r.name] ?? null,
+            fields: [
+              ...r.columns
+                .filter(
+                  (c) => !['creado_por', 'actualizado_por'].includes(c.name),
+                )
+                .map((c) => ({
+                  name: c.name,
+                  type: c.type,
+                  nullable: c.nullable,
+                  enum: c.enum,
+                  required:
+                    !c.nullable &&
+                    c.default === null &&
+                    !serverFields.has(c.name),
+                  default: c.default,
+                  create: !serverFields.has(c.name),
+                  update:
+                    !serverFields.has(c.name) &&
+                    !(immutable[r.name] ?? []).includes(c.name),
+                  reference:
+                    r.refs
+                      .filter(
+                        (ref) =>
+                          ref.columns.includes(c.name) &&
+                          c.name !== 'organizacion_id',
+                      )
+                      .map((ref) => ({
+                        resource: ref.target,
+                        field: ref.targetColumns[ref.columns.indexOf(c.name)],
+                      }))[0] ?? null,
+                })),
+              ...(r.name === 'mascota'
+                ? [
+                    {
+                      name: 'tutor_principal_id',
+                      type: 'uuid',
+                      nullable: false,
+                      enum: [],
+                      required: true,
+                      default: null,
+                      create: true,
+                      update: false,
+                      reference: { resource: 'tutor', field: 'id' },
+                    },
+                  ]
+                : []),
+            ],
           })),
       }),
     );
+  }
+  private catalogPermission(a: Access, r: Resource, action: Action): boolean {
+    try {
+      const scope = this.access.authorize(a, r, action);
+      this.access.scopeSql(r, 'r', scope, []);
+      return true;
+    } catch (error) {
+      if (error instanceof ForbiddenException) return false;
+      throw error;
+    }
   }
   list(
     identity: Identity,
@@ -211,6 +293,7 @@ export class ResourcePersistenceService {
     target: EntityTarget<object>,
     body: unknown,
     key: string,
+    initialRevision?: Row,
   ) {
     const r = resourceForEntity(target);
     if (!r.create)
@@ -226,10 +309,20 @@ export class ResourcePersistenceService {
     }
     const data = payload(r, input, true);
     const hash = createHash('sha256')
-      .update(JSON.stringify(canonical({ resource: r.name, body })))
+      .update(
+        JSON.stringify(
+          canonical({
+            resource: r.name,
+            body,
+            ...(initialRevision ? { initialRevision } : {}),
+          }),
+        ),
+      )
       .digest('hex');
     return this.access.run(identity, org, async (manager, a) => {
       const scope = this.access.authorize(a, r, 'create');
+      if (initialRevision)
+        this.access.authorize(a, resource('revision_clinica'), 'create');
       this.access.scopeSql(r, 'r', scope, []);
       await manager.query(
         'SELECT pg_advisory_xact_lock(hashtextextended($1,0))',
@@ -289,6 +382,24 @@ export class ResourcePersistenceService {
         };
         await this.rules.validate(manager, relation, values, undefined, a);
         await this.insert(manager, relation, values, a);
+      }
+      if (initialRevision) {
+        if (r.name !== 'atencion_clinica')
+          throw new BadRequestException('Historia no aplicable');
+        const revision = resource('revision_clinica');
+        const values = payload(
+          revision,
+          {
+            ...initialRevision,
+            atencion_id: row.id,
+            numero: 1,
+            estado: 'borrador',
+          },
+          true,
+        );
+        await this.rules.validate(manager, revision, values, undefined, a);
+        const inserted = await this.insert(manager, revision, values, a);
+        await this.find(manager, revision, String(inserted.id), a, 'create');
       }
       await this.find(manager, r, String(row.id), a, 'create');
       if (!r.tenant)

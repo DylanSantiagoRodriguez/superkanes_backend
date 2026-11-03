@@ -1,3 +1,4 @@
+import { CreateAtencionHistoriaDto } from './dto/create-atencion-historia.dto';
 import { AtencionClinicaEntity } from './entities/atencion-clinica.entity';
 import { Injectable } from '@nestjs/common';
 import type { Identity } from '../../auth/token.service';
@@ -9,6 +10,25 @@ import { UpdateAtencionClinicaDto } from './dto/update-atencion-clinica.dto';
 @Injectable()
 export class AtencionClinicaService {
   constructor(private readonly persistence: ResourcePersistenceService) {}
+  author(identity: Identity, organizationId: string) {
+    return this.persistence.clinicalAuthor(identity, organizationId);
+  }
+  createWithHistory(
+    identity: Identity,
+    organizationId: string,
+    dto: CreateAtencionHistoriaDto,
+    key: string,
+  ) {
+    const { motivo_consulta, documento, ...attention } = dto;
+    return this.persistence.create(
+      identity,
+      organizationId,
+      AtencionClinicaEntity,
+      attention,
+      key,
+      { motivo_consulta, documento },
+    );
+  }
   findAll(identity: Identity, organizationId: string, query: ListQueryDto) {
     return this.persistence.list(
       identity,

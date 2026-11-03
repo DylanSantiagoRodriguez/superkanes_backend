@@ -33,9 +33,12 @@
     "test:crud": "npm run build && node test/crud.integration.cjs",
     "test:auth": "npm run build && node test/auth.integration.cjs",
     "admin:provision": "npm run build && node scripts/provision-local-admin.cjs",
-    "auth:setup": "node scripts/setup-auth.cjs"
+    "auth:setup": "node scripts/setup-auth.cjs",
+    "seed:demo": "npm run build && node scripts/seed-demo.cjs",
+    "storage:setup": "node scripts/setup-storage.cjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1161.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
@@ -53,6 +56,7 @@
     "pg": "^8.23.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "sharp": "^0.35.5",
     "typeorm": "^0.3.31"
   },
   "devDependencies": {

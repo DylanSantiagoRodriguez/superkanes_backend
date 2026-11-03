@@ -1,0 +1,28 @@
+const assert = require('node:assert/strict');
+const {randomUUID} = require('node:crypto');
+module.exports = async function petRegistration({request,owner,org,otherOrg,ids,base,adminToken,user}) {
+  const [otherSpecies] = await owner.query("INSERT INTO vet.especie(organizacion_id,nombre) VALUES($1,'Felino prueba de registro') RETURNING id",[org]);
+  const [otherBreed] = await owner.query("INSERT INTO vet.raza(organizacion_id,especie_id,nombre) VALUES($1,$2,'Raza felina de prueba') RETURNING id",[org,otherSpecies.id]);
+  for (let i=0;i<26;i++) await owner.query("INSERT INTO vet.raza(organizacion_id,especie_id,nombre) VALUES($1,$2,$3)",[org,ids.especie,`Raza canina de prueba ${i}`]);
+  const [foreignSpecies] = await owner.query("INSERT INTO vet.especie(organizacion_id,nombre) VALUES($1,'Especie privada') RETURNING id",[otherOrg]);
+  const [foreignBreed] = await owner.query("INSERT INTO vet.raza(organizacion_id,especie_id,nombre) VALUES($1,$2,'Raza privada') RETURNING id",[otherOrg,foreignSpecies.id]);
+  const body={codigo:'PET-RELATION-CHECK',nombre:'Paciente prueba relaciones',especie_id:ids.especie,tutor_principal_id:ids.tutor};
+  const invalid=await request('POST','/mascota',{...body,raza_id:otherBreed.id},400);
+  assert.equal(invalid.code,'BREED_SPECIES_MISMATCH');
+  assert.equal((await owner.query('SELECT id FROM vet.mascota WHERE organizacion_id=$1 AND codigo=$2',[org,body.codigo])).length,0);
+  await request('POST','/mascota',{...body,raza_id:randomUUID()},404);
+  const foreign=await request('POST','/mascota',{...body,raza_id:foreignBreed.id},404);
+  assert.equal(foreign.code,undefined);
+  const noBreed=await request('POST','/mascota',body,201);
+  assert.equal(noBreed.data.raza_id,null);
+  const withBreed=await request('POST','/mascota',{...body,codigo:'PET-WITH-BREED',raza_id:ids.raza},201);
+  assert.equal(withBreed.data.raza_id,ids.raza);
+  const badEdit=await request('PATCH',`/mascota/${withBreed.data.id}`,{especie_id:otherSpecies.id},400,{'If-Match':'"1"'});
+  assert.equal(badEdit.code,'BREED_SPECIES_MISMATCH');
+  const corrected=await request('PATCH',`/mascota/${withBreed.data.id}`,{especie_id:otherSpecies.id,raza_id:null},200,{'If-Match':'"1"'});
+  assert.equal(corrected.data.raza_id,null);
+  const guardian=await owner.query('SELECT tutor_id FROM vet.mascota_tutor WHERE mascota_id=$1 AND es_principal',[noBreed.data.id]);
+  assert.equal(guardian[0].tutor_id,ids.tutor);
+  if(process.env.TEST_BROWSER==='true') await require('../../superkanes_frontend/test/pet-browser.cjs')({base,adminToken,user,org,speciesId:ids.especie,otherSpeciesId:otherSpecies.id,otherBreedId:otherBreed.id,tutorId:ids.tutor});
+  console.log('OK: mascotas con/sin raza, incompatibilidad explícita, cambio de especie, tutor y aislamiento.');
+};

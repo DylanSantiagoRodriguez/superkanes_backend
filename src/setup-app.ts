@@ -2,11 +2,13 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { json } from 'express';
 
 export function configureApp(app: INestApplication): void {
   const config = app.get(ConfigService);
   app.setGlobalPrefix('api/v1');
   app.use(helmet());
+  app.use(json({ limit: '2mb' }));
   app.enableCors({
     origin: config.getOrThrow<string[]>('CORS_ORIGINS'),
     exposedHeaders: ['ETag'],

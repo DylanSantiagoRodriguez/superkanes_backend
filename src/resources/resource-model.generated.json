@@ -3983,6 +3983,13 @@
         "nullable": false,
         "default": "1",
         "enum": []
+      },
+      {
+        "name": "documento",
+        "type": "jsonb",
+        "nullable": true,
+        "default": null,
+        "enum": []
       }
     ],
     "refs": [

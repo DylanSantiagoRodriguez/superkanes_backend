@@ -4,6 +4,24 @@ import { DatabaseValue } from '../../../common/validation/database-value.decorat
 
 export class CreateRevisionClinicaDto {
   @ApiProperty({
+    required: false,
+    nullable: true,
+    type: Object,
+    additionalProperties: true,
+    description:
+      'Documento clínico Tiptap validado: hasta 200.000 caracteres y 1 MiB JSON',
+  })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @DatabaseValue({
+    name: 'documento',
+    type: 'jsonb',
+    nullable: true,
+    default: null,
+    enum: [],
+  })
+  documento?: Record<string, unknown> | null;
+
+  @ApiProperty({
     required: true,
     nullable: false,
     type: 'string',

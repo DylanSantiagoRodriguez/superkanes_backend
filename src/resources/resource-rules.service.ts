@@ -10,7 +10,7 @@ import Ajv, { ValidateFunction } from 'ajv';
 import { Access } from './resource-access.service';
 import { Resource, Row } from './resource-registry';
 
-const immutable: Record<string, string[]> = {
+export const immutable: Record<string, string[]> = {
   membresia: ['usuario_id'],
   profesional: ['membresia_id'],
   mascota_tutor: ['mascota_id', 'tutor_id', 'vigente_desde'],
@@ -31,7 +31,7 @@ const immutable: Record<string, string[]> = {
   adjunto_vacunacion: ['vacunacion_id'],
   adjunto_peluqueria: ['servicio_id'],
 };
-const graphs: Record<string, Record<string, string[]>> = {
+export const graphs: Record<string, Record<string, string[]>> = {
   cita: {
     programada: ['confirmada', 'en_atencion', 'cancelada', 'no_asistio'],
     confirmada: ['en_atencion', 'cancelada', 'no_asistio'],
@@ -257,6 +257,18 @@ export class ResourceRulesService {
         throw new BadRequestException(
           'Los datos no cumplen el formulario clinico',
         );
+    }
+    if (r.name === 'mascota' && merged.raza_id && merged.especie_id) {
+      const breeds: Row[] = await manager.query(
+        'SELECT especie_id FROM vet.raza WHERE organizacion_id=$1 AND id=$2',
+        [access.organizationId, merged.raza_id],
+      );
+      if (breeds[0] && breeds[0].especie_id !== merged.especie_id)
+        throw new BadRequestException({
+          code: 'BREED_SPECIES_MISMATCH',
+          message:
+            'La raza seleccionada no pertenece a la especie del paciente',
+        });
     }
     for (const ref of r.refs) {
       if (

@@ -1,3 +1,4 @@
+import { validateClinicalDocument } from './clinical-document';
 import { BadRequestException, HttpException } from '@nestjs/common';
 import { isEmail, isISO8601, isUUID } from 'class-validator';
 import { Column, Resource, Row, serverFields } from './resource-registry';
@@ -68,6 +69,8 @@ export function field(c: Column, value: unknown): unknown {
       fail();
     return s;
   }
+  if (type === 'jsonb' && c.name === 'documento')
+    return validateClinicalDocument(value);
   if (type === 'jsonb') {
     if (!value || typeof value !== 'object') fail();
     safeJson(value);

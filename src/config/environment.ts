@@ -52,6 +52,7 @@ export function validateEnvironment(input: Record<string, unknown>) {
   return {
     ...input,
     ...validateAuth(input),
+    ...validateStorage(input),
     NODE_ENV: environment,
     PORT: integer('PORT', '3000', 65535),
     DB_HOST: text('DB_HOST', '127.0.0.1'),
@@ -88,5 +89,47 @@ function validateAuth(input: Record<string, unknown>) {
     AUTH_JWT_SECRET: secret,
     AUTH_ISSUER: issuer,
     AUTH_AUDIENCE: audience,
+  };
+}
+
+function validateStorage(input: Record<string, unknown>) {
+  const enabled = input.S3_ENABLED ?? 'false';
+  if (typeof enabled !== 'string' || !['true', 'false'].includes(enabled))
+    throw new Error('Invalid S3_ENABLED');
+  const bucket = input.S3_BUCKET ?? 'superkanes';
+  if (
+    typeof bucket !== 'string' ||
+    !/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(bucket)
+  )
+    throw new Error('Invalid S3_BUCKET');
+  if (enabled === 'true') {
+    for (const name of ['S3_ENDPOINT', 'S3_ACCESS_KEY', 'S3_SECRET_KEY']) {
+      if (
+        typeof input[name] !== 'string' ||
+        !input[name] ||
+        String(input[name]).startsWith('REPLACE_')
+      )
+        throw new Error(`Missing or invalid ${name}`);
+    }
+    const endpoint = new URL(String(input.S3_ENDPOINT));
+    if (
+      !['http:', 'https:'].includes(endpoint.protocol) ||
+      endpoint.username ||
+      endpoint.password ||
+      endpoint.search ||
+      endpoint.hash ||
+      endpoint.pathname !== '/'
+    )
+      throw new Error('Invalid S3_ENDPOINT');
+    if (String(input.S3_SECRET_KEY).length < 16)
+      throw new Error('Invalid S3_SECRET_KEY');
+  }
+  return {
+    S3_ENABLED: enabled === 'true',
+    S3_BUCKET: bucket,
+    S3_REGION:
+      typeof input.S3_REGION === 'string' && input.S3_REGION.trim()
+        ? input.S3_REGION.trim()
+        : 'us-east-1',
   };
 }

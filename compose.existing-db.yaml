@@ -1,0 +1,14 @@
+# Use an already running PostgreSQL on the host with the credentials in .env.
+# docker compose -f compose.yaml -f compose.existing-db.yaml up -d --build
+services:
+  postgres:
+    profiles: [isolated-database]
+  migrate:
+    depends_on: !reset {}
+    environment:
+      DB_HOST: host.docker.internal
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+  backend:
+    environment:
+      DB_HOST: host.docker.internal
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
