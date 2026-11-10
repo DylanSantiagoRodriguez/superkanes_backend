@@ -1,3 +1,4 @@
+import { ClinicalModule } from './clinical/clinical.module';
 import { StorageModule } from './storage/storage.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -22,6 +23,7 @@ import { DomainModule } from './modules/domain.module';
     AuthModule,
     ResourceCatalogModule,
     DomainModule,
+    ClinicalModule,
     StorageModule,
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }]),
   ],
