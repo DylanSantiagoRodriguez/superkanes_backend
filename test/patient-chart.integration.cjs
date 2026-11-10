@@ -31,7 +31,7 @@ module.exports = async function patientChart({request,owner,org,otherOrg,ids,sta
   const limited=(await request('GET',path,undefined,200,{Authorization:`Bearer ${staffToken}`})).data;
   assert.equal(limited.overview.alertas,null);assert.equal(limited.overview.revisiones,null);assert.equal(limited.guardian,null);
   const partial=await request('GET',path+'/registros/historia',undefined,200,{Authorization:`Bearer ${staffToken}`});
-  assert.deepEqual(partial.unavailable,['vacunacion','peluqueria']);
+  assert.deepEqual(partial.unavailable,['vacunacion','peluqueria','laboratorio']);
   assert.ok(partial.data.every(row=>row.tipo_evento==='clinica'));
 
   console.log('OK: ficha clínica, paginación, filtros, ausencia de permisos y aislamiento entre organizaciones.');

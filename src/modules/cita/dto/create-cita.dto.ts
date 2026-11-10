@@ -171,4 +171,19 @@ export class CreateCitaDto {
     enum: [],
   })
   notas?: string | null;
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    type: 'string',
+    format: 'date-time',
+  })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @DatabaseValue({
+    name: 'llegada_en',
+    type: 'timestamptz',
+    nullable: true,
+    default: null,
+    enum: [],
+  })
+  llegada_en?: string | null;
 }

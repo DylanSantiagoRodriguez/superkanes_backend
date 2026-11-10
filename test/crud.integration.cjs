@@ -171,6 +171,9 @@ async function main() {
     await request('PATCH', `/tutor/${ids.tutor}`, { nombres: 'Ana Maria' }, 428);
     await require('./patient-chart.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
     await require('./clinical-workflow.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
+    await require('./clinical-consent.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
+    await require('./clinical-agenda.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
+    await require('./clinical-laboratory.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
     if (process.env.TEST_STORAGE === 'true') await require('./clinical-documents.integration.cjs')({base,request,owner,org,otherOrg,ids,adminToken,staffToken});
     if (process.env.TEST_BROWSER === 'true') await require('../../superkanes_frontend/test/patient-chart-browser.cjs')({base,adminToken,user});
     await patch('tutor', { nombres: 'Ana Maria' });
@@ -232,6 +235,12 @@ async function main() {
   } finally {
     if (app) await app.close();
     if (jwks) await new Promise(resolve => jwks.close(resolve));
+    if (owner?.isInitialized && process.env.TEST_STORAGE === 'true') {
+      const files=await owner.query("SELECT contenedor,ruta_relativa,version_objeto FROM vet.archivo WHERE organizacion_id=$1 AND proveedor='minio' AND ruta_relativa LIKE $2",[org,`${org}/%`]).catch(()=>[]);
+      const {S3Client,DeleteObjectCommand}=require('@aws-sdk/client-s3');
+      const cleanup=new S3Client({endpoint:process.env.S3_ENDPOINT,region:process.env.S3_REGION||'us-east-1',forcePathStyle:true,credentials:{accessKeyId:process.env.MINIO_ROOT_USER,secretAccessKey:process.env.MINIO_ROOT_PASSWORD}});
+      try { for(const file of files)await cleanup.send(new DeleteObjectCommand({Bucket:file.contenedor,Key:file.ruta_relativa,VersionId:file.version_objeto||undefined})); } finally {cleanup.destroy();}
+    }
     if (owner?.isInitialized) await owner.destroy();
     if (databaseCreated && /^superkanes_test_[a-f0-9]{32}$/.test(name)) await source.query(`DROP DATABASE "${name}" WITH (FORCE)`);
     if (source.isInitialized) await source.destroy();

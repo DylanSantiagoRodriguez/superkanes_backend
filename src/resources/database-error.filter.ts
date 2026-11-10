@@ -9,6 +9,7 @@ export class DatabaseErrorFilter implements ExceptionFilter {
     const driver = error.driverError as { code?: string };
     const code = driver.code ?? 'unknown';
     const map: Record<string, [number, string]> = {
+      '23P01': [409, 'El responsable ya tiene una cita en ese horario'],
       '23505': [409, 'Ya existe un registro con esos datos'],
       '23503': [
         409,

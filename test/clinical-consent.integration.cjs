@@ -1,0 +1,28 @@
+const assert=require('node:assert/strict');
+const {randomUUID}=require('node:crypto');
+module.exports=async function consent({request,owner,org,otherOrg,ids,staffToken}){
+  const body={atencion_id:ids.atencion_clinica,procedimiento:'Procedimiento de prueba',alcance:'Autorización limitada al procedimiento descrito',plantilla_id:ids.plantilla_consentimiento,documento_archivo_id:ids.archivo,hash_documento:'a'.repeat(64)};
+  await request('POST','/consentimiento',{...body,servicio_id:ids.servicio_peluqueria},400);
+  const created=(await request('POST','/consentimiento',body,201)).data;
+  await request('PATCH',`/consentimiento/${created.id}`,{estado:'aceptado'},409,{'If-Match':`"${created.version}"`});
+  const response={tutor_id:ids.tutor,evidencia_archivo_id:ids.archivo,decision:'aceptado'},headers={'If-Match':`"${created.version}"`,'Idempotency-Key':randomUUID()};
+  const path=`/clinica/consentimientos/${created.id}/responder`;
+  await request('POST',path,response,403,{...headers,Authorization:`Bearer ${staffToken}`});
+  await request('POST',path,response,404,{...headers,'X-Organization-Id':otherOrg});
+  await request('POST',path,{...response,tutor_id:ids.otherTutor},409,headers);
+  const accepted=(await request('POST',path,response,201,headers)).data;
+  assert.equal(accepted.estado,'aceptado');assert.equal((await request('POST',path,response,201,headers)).data.id,created.id);
+  const signatures=await owner.query('SELECT * FROM vet.firma_consentimiento WHERE consentimiento_id=$1',[created.id]);
+  assert.equal(signatures.length,1);assert.equal(signatures[0].decision,'aceptado');assert.equal(signatures[0].identidad_firmante_snapshot.nombres,'Ana');
+  const rejected=(await request('POST','/consentimiento',body,201)).data;
+  await request('POST',`/clinica/consentimientos/${rejected.id}/responder`,{...response,decision:'rechazado'},201,{'If-Match':`"${rejected.version}"`});
+  assert.equal((await request('GET',`/consentimiento/${rejected.id}`)).data.estado,'rechazado');
+  const [role]=await owner.query("INSERT INTO vet.rol(organizacion_id,nombre) VALUES($1,'Lectura consentimientos otra sede') RETURNING id",[org]);
+  const [site]=await owner.query("INSERT INTO vet.sede(organizacion_id,nombre,codigo) VALUES($1,'Consentimiento otra sede','CS') RETURNING id",[org]);
+  await owner.query("INSERT INTO vet.rol_permiso(organizacion_id,rol_id,permiso_id) SELECT $1,$2,id FROM vet.permiso WHERE codigo='consentimiento.read'",[org,role.id]);
+  await owner.query('INSERT INTO vet.asignacion_rol(organizacion_id,membresia_id,rol_id,sede_id) VALUES($1,$2,$3,$4)',[org,ids.membresia,role.id,site.id]);
+  await request('GET',`/consentimiento/${created.id}`,undefined,404,{Authorization:`Bearer ${staffToken}`});
+  await owner.query('UPDATE vet.asignacion_rol SET sede_id=$1 WHERE rol_id=$2',[ids.sede,role.id]);
+  await request('GET',`/consentimiento/${created.id}`,undefined,200,{Authorization:`Bearer ${staffToken}`});
+  console.log('OK: consentimiento clínico, rechazo, evidencia, tutor autorizado, reintentos y alcance de sede sin alterar peluquería.');
+};

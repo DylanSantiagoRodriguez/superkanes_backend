@@ -38,6 +38,9 @@ export class CitaEntity {
   @Column({ type: 'timestamptz', nullable: false })
   fin!: Date;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  llegada_en!: Date | null;
+
   @Column({ type: 'uuid', nullable: true })
   responsable_id!: string | null;
 

@@ -72,4 +72,6 @@ export class FirmaConsentimientoResponseDto {
     format: 'uuid',
   })
   creado_por!: string | null;
+  @ApiProperty({ type: 'string', enum: ['aceptado', 'rechazado'] })
+  decision!: 'aceptado' | 'rechazado';
 }

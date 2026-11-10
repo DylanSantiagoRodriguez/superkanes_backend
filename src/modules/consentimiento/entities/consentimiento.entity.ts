@@ -18,8 +18,17 @@ export class ConsentimientoEntity {
   @Column({ type: 'uuid', nullable: false })
   organizacion_id!: string;
 
-  @Column({ type: 'uuid', nullable: false })
-  servicio_id!: string;
+  @Column({ type: 'uuid', nullable: true })
+  servicio_id!: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  atencion_id!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  procedimiento!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  alcance!: string | null;
 
   @Column({ type: 'uuid', nullable: false })
   plantilla_id!: string;

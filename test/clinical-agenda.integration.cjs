@@ -1,0 +1,21 @@
+const assert=require('node:assert/strict');
+module.exports=async function agenda({request,owner,org,otherOrg,ids,staffToken}){
+  const body={mascota_id:ids.mascota,sede_id:ids.sede,tutor_contacto_id:ids.tutor,tipo:'clinica',inicio:'2028-02-03T10:00:00-05:00',fin:'2028-02-03T10:30:00-05:00',responsable_id:ids.rootMembership};
+  const appointment=(await request('POST','/cita',body,201)).data;
+  await request('POST','/cita',{...body,inicio:'2028-02-03T10:15:00-05:00',fin:'2028-02-03T11:00:00-05:00'},409);
+  await request('POST','/cita',{...body,inicio:body.fin,fin:'2028-02-03T11:00:00-05:00'},201);
+  const path='/clinica/agenda?from=2028-02-03T00:00:00-05:00&to=2028-02-03T23:59:59-05:00';
+  const list=await request('GET',path);assert.ok(list.data.some(row=>row.id===appointment.id&&row.nombre_paciente==='Luna'));
+  assert.equal((await request('GET',path,undefined,200,{'X-Organization-Id':otherOrg})).data.length,0);
+  await request('GET',path,undefined,403,{Authorization:`Bearer ${staffToken}`});
+  const arrived=(await request('PATCH',`/clinica/citas/${appointment.id}/llegada`,{},200,{'If-Match':`"${appointment.version}"`})).data;
+  assert.ok(arrived.llegada_en);
+  const attention=(await request('POST','/atencion_clinica/con-historia',{mascota_id:ids.mascota,sede_id:ids.sede,cita_id:appointment.id,fecha_atencion:new Date().toISOString(),profesional_id:ids.profesional,motivo_consulta:'Atención desde agenda'},201)).data;
+  assert.equal((await request('GET',`/cita/${appointment.id}`)).data.estado,'en_atencion');
+  const [revision]=await owner.query('SELECT * FROM vet.revision_clinica WHERE atencion_id=$1',[attention.id]);
+  await request('POST',`/clinica/revisiones/${revision.id}/guardar`,{revision:{evaluacion:'Evaluación sintética',plan:'Seguimiento sintético'},close:true},201,{'If-Match':`"${revision.version}"`});
+  assert.equal((await request('GET',`/cita/${appointment.id}`)).data.estado,'completada');
+  const fresh=(await request('GET',`/cita/${appointment.id}`)).data;
+  await request('PATCH',`/clinica/citas/${appointment.id}/llegada`,{},409,{'If-Match':`"${fresh.version}"`});
+  console.log('OK: agenda, llegada, límites de reserva, aislamiento e inicio/cierre coordinado con la cita.');
+};

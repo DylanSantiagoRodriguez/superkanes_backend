@@ -4,19 +4,20 @@ import { DatabaseValue } from '../../../common/validation/database-value.decorat
 
 export class CreateConsentimientoDto {
   @ApiProperty({
-    required: true,
-    nullable: false,
+    required: false,
+    nullable: true,
     type: 'string',
     format: 'uuid',
   })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
   @DatabaseValue({
     name: 'servicio_id',
     type: 'uuid',
-    nullable: false,
+    nullable: true,
     default: null,
     enum: [],
   })
-  servicio_id!: string;
+  servicio_id?: string | null;
 
   @ApiProperty({
     required: true,
@@ -89,4 +90,34 @@ export class CreateConsentimientoDto {
     enum: [],
   })
   emitido_en?: string;
+  @ApiProperty({ required: false, nullable: true, type: 'string' })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @DatabaseValue({
+    name: 'atencion_id',
+    type: 'uuid',
+    nullable: true,
+    default: null,
+    enum: [],
+  })
+  atencion_id?: string | null;
+  @ApiProperty({ required: false, nullable: true, type: 'string' })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @DatabaseValue({
+    name: 'procedimiento',
+    type: 'text',
+    nullable: true,
+    default: null,
+    enum: [],
+  })
+  procedimiento?: string | null;
+  @ApiProperty({ required: false, nullable: true, type: 'string' })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @DatabaseValue({
+    name: 'alcance',
+    type: 'text',
+    nullable: true,
+    default: null,
+    enum: [],
+  })
+  alcance?: string | null;
 }

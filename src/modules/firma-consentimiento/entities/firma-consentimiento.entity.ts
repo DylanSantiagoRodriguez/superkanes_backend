@@ -45,6 +45,9 @@ export class FirmaConsentimientoEntity {
   @Column({ type: 'uuid', nullable: true })
   creado_por!: string | null;
 
+  @Column({ type: 'text', nullable: false, default: () => "'aceptado'" })
+  decision!: 'aceptado' | 'rechazado';
+
   @ManyToOne(() => OrganizacionEntity, {
     cascade: false,
     eager: false,

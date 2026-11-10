@@ -236,6 +236,32 @@ export class ResourcePersistenceService {
             String(attention.id),
             attentionData,
           );
+          if (attention.cita_id) {
+            const appointment = await this.find(
+              manager,
+              resource('cita'),
+              uuid(attention.cita_id),
+              a,
+              'update',
+              true,
+            );
+            if (appointment.estado === 'en_atencion') {
+              const change = { estado: 'completada' };
+              await this.rules.validate(
+                manager,
+                resource('cita'),
+                change,
+                appointment,
+                a,
+              );
+              await this.patch(
+                manager,
+                resource('cita'),
+                String(appointment.id),
+                change,
+              );
+            }
+          }
         }
         return { revision: updated, details: saved };
       },
@@ -450,6 +476,144 @@ export class ResourcePersistenceService {
         [org, a.userId, key, operation, hash, JSON.stringify(result)],
       );
       return { data: result };
+    });
+  }
+
+  respondClinicalConsent(
+    identity: Identity,
+    org: string,
+    id: string,
+    body: unknown,
+    key: string,
+    etag: string,
+  ) {
+    const input = object(body),
+      version = expectedVersion(etag);
+    if (
+      Object.keys(input).some(
+        (k) => !['tutor_id', 'evidencia_archivo_id', 'decision'].includes(k),
+      ) ||
+      !['aceptado', 'rechazado'].includes(String(input.decision))
+    )
+      throw new BadRequestException('Respuesta no valida');
+    const tutor = uuid(input.tutor_id),
+      evidence = uuid(input.evidencia_archivo_id);
+    const hash = createHash('sha256')
+      .update(JSON.stringify(canonical({ id, version, input })))
+      .digest('hex');
+    return this.access.run(identity, org, async (manager, a) => {
+      const r = resource('consentimiento'),
+        signatureResource = resource('firma_consentimiento');
+      const current = await this.find(manager, r, id, a, 'update', true);
+      if (!current.atencion_id)
+        throw new BadRequestException(
+          'Este flujo corresponde a consentimientos clinicos',
+        );
+      const attention = await this.find(
+        manager,
+        resource('atencion_clinica'),
+        uuid(current.atencion_id),
+        a,
+        'read',
+      );
+      await this.rules.validate(
+        manager,
+        resource('atencion_clinica'),
+        { profesional_id: attention.profesional_id },
+        attention,
+        a,
+      );
+      this.access.authorize(a, signatureResource, 'create');
+      await this.find(manager, resource('archivo'), evidence, a, 'read');
+      await manager.query(
+        'SELECT pg_advisory_xact_lock(hashtextextended($1,0))',
+        [`${org}:${a.userId}:${key}`],
+      );
+      const prior: { resource: string; request_hash: string; response: Row }[] =
+        await manager.query(
+          'SELECT resource,request_hash,response FROM api.idempotency WHERE organizacion_id=$1 AND usuario_id=$2 AND key=$3 AND expires_at>now()',
+          [org, a.userId, key],
+        );
+      if (prior[0]) {
+        if (
+          prior[0].resource !== 'clinical-consent' ||
+          prior[0].request_hash !== hash
+        )
+          throw new ConflictException('Idempotency-Key ya utilizado');
+        return { data: prior[0].response };
+      }
+      this.checkVersion(current, version);
+      if (current.estado !== 'pendiente')
+        throw new ConflictException('Consentimiento ya respondido');
+      const linked: Row[] = await manager.query(
+        'SELECT x.id FROM vet.adjunto_clinico x JOIN vet.revision_clinica v ON v.id=x.revision_id AND v.organizacion_id=x.organizacion_id WHERE x.organizacion_id=$1 AND x.archivo_id=$2 AND v.atencion_id=$3',
+        [org, evidence, current.atencion_id],
+      );
+      if (!linked.length)
+        throw new BadRequestException(
+          'La evidencia debe estar adjunta a esta atencion',
+        );
+      const signature = {
+        consentimiento_id: id,
+        tutor_id: tutor,
+        evidencia_archivo_id: evidence,
+        metodo: 'documento_escaneado',
+        hash_documento_aceptado: current.hash_documento,
+        decision: input.decision,
+        firmado_en: new Date().toISOString(),
+      };
+      await this.rules.validate(
+        manager,
+        signatureResource,
+        signature,
+        undefined,
+        a,
+      );
+      const signed = await this.insert(
+        manager,
+        signatureResource,
+        signature,
+        a,
+      );
+      await this.find(
+        manager,
+        signatureResource,
+        String(signed.id),
+        a,
+        'create',
+      );
+      const change = { estado: input.decision };
+      await this.rules.validate(manager, r, change, current, a);
+      const result = await this.patch(manager, r, id, change);
+      await manager.query(
+        'DELETE FROM api.idempotency WHERE organizacion_id=$1 AND usuario_id=$2 AND key=$3 AND expires_at<=now()',
+        [org, a.userId, key],
+      );
+      await manager.query(
+        'INSERT INTO api.idempotency(organizacion_id,usuario_id,key,resource,request_hash,response) VALUES($1,$2,$3,$4,$5,$6)',
+        [org, a.userId, key, 'clinical-consent', hash, JSON.stringify(result)],
+      );
+      return { data: result };
+    });
+  }
+
+  appointmentArrival(
+    identity: Identity,
+    org: string,
+    id: string,
+    etag: string,
+  ) {
+    const version = expectedVersion(etag);
+    return this.access.run(identity, org, async (manager, a) => {
+      const r = resource('cita'),
+        row = await this.find(manager, r, id, a, 'update', true);
+      this.checkVersion(row, version);
+      if (!['programada', 'confirmada'].includes(String(row.estado)))
+        throw new ConflictException('La cita no admite registrar llegada');
+      if (row.llegada_en) return { data: row };
+      const data = { llegada_en: new Date().toISOString() };
+      await this.rules.validate(manager, r, data, row, a);
+      return { data: await this.patch(manager, r, id, data) };
     });
   }
 
@@ -783,6 +947,38 @@ export class ResourcePersistenceService {
         };
         await this.rules.validate(manager, relation, values, undefined, a);
         await this.insert(manager, relation, values, a);
+      }
+      if (initialRevision && row.cita_id) {
+        const appointmentResource = resource('cita');
+        const appointment = await this.find(
+          manager,
+          appointmentResource,
+          uuid(row.cita_id),
+          a,
+          'update',
+          true,
+        );
+        if (!['programada', 'confirmada'].includes(String(appointment.estado)))
+          throw new ConflictException(
+            'La cita no admite iniciar otra consulta',
+          );
+        const change = {
+          estado: 'en_atencion',
+          llegada_en: appointment.llegada_en ?? new Date().toISOString(),
+        };
+        await this.rules.validate(
+          manager,
+          appointmentResource,
+          change,
+          appointment,
+          a,
+        );
+        await this.patch(
+          manager,
+          appointmentResource,
+          String(appointment.id),
+          change,
+        );
       }
       if (initialRevision) {
         if (r.name !== 'atencion_clinica')

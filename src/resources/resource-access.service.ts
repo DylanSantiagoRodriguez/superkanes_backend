@@ -99,6 +99,10 @@ export class ResourceAccessService {
       params.push([...scope]);
       return `${alias}."${r.site}" = ANY($${params.length}::uuid[])`;
     }
+    if (r.name === 'consentimiento') {
+      params.push([...scope]);
+      return `(EXISTS(SELECT 1 FROM vet.atencion_clinica c WHERE c.organizacion_id=${alias}.organizacion_id AND c.id=${alias}.atencion_id AND c.sede_id=ANY($${params.length}::uuid[])) OR EXISTS(SELECT 1 FROM vet.servicio_peluqueria p WHERE p.organizacion_id=${alias}.organizacion_id AND p.id=${alias}.servicio_id AND p.sede_id=ANY($${params.length}::uuid[])))`;
+    }
     if (r.parent) {
       const [parent, key] = r.parent;
       const parentAlias = `${alias}_p`;

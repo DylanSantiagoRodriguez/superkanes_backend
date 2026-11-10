@@ -3355,6 +3355,13 @@
         "nullable": false,
         "default": "1",
         "enum": []
+      },
+      {
+        "name": "llegada_en",
+        "type": "timestamptz",
+        "nullable": true,
+        "default": null,
+        "enum": []
       }
     ],
     "refs": [
@@ -5801,7 +5808,7 @@
       {
         "name": "servicio_id",
         "type": "uuid",
-        "nullable": false,
+        "nullable": true,
         "default": null,
         "enum": []
       },
@@ -5879,6 +5886,27 @@
         "nullable": false,
         "default": "1",
         "enum": []
+      },
+      {
+        "name": "atencion_id",
+        "type": "uuid",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "procedimiento",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
+      },
+      {
+        "name": "alcance",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
       }
     ],
     "refs": [
@@ -5937,6 +5965,17 @@
           "documento_archivo_id"
         ],
         "target": "archivo",
+        "targetColumns": [
+          "organizacion_id",
+          "id"
+        ]
+      },
+      {
+        "columns": [
+          "organizacion_id",
+          "atencion_id"
+        ],
+        "target": "atencion_clinica",
         "targetColumns": [
           "organizacion_id",
           "id"
@@ -6030,6 +6069,16 @@
         "nullable": true,
         "default": null,
         "enum": []
+      },
+      {
+        "name": "decision",
+        "type": "text",
+        "nullable": false,
+        "default": "'aceptado'",
+        "enum": [
+          "aceptado",
+          "rechazado"
+        ]
       }
     ],
     "refs": [

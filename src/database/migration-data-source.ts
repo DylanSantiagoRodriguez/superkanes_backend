@@ -1,3 +1,6 @@
+import { LaboratoryWorkflow1794320000000 } from './migrations/1794320000000-laboratory-workflow';
+import { AppointmentScheduling1794319000000 } from './migrations/1794319000000-appointment-scheduling';
+import { ClinicalConsent1794318000000 } from './migrations/1794318000000-clinical-consent';
 import { ClinicalDetailVersion1794317000000 } from './migrations/1794317000000-clinical-detail-version';
 import { ClinicalExam1794316000000 } from './migrations/1794316000000-clinical-exam';
 import 'reflect-metadata';
@@ -43,6 +46,9 @@ export default new DataSource({
     ClinicalDocument1793700000000,
     ClinicalExam1794316000000,
     ClinicalDetailVersion1794317000000,
+    ClinicalConsent1794318000000,
+    AppointmentScheduling1794319000000,
+    LaboratoryWorkflow1794320000000,
   ],
   logging: ['error', 'migration'],
   extra: { max: 1, connectionTimeoutMillis: 10000 },

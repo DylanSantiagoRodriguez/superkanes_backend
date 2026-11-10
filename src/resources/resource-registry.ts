@@ -146,12 +146,17 @@ export function resource(name: string): Resource {
   return value;
 }
 export function permissionCodes(): string[] {
-  return [...resources.values()].flatMap((r) =>
-    [
-      'read',
-      ...(r.create ? ['create'] : []),
-      ...(r.update ? ['update'] : []),
-      ...(r.deletion !== 'none' ? ['delete'] : []),
-    ].map((a) => `${r.name}.${a}`),
-  );
+  return [
+    'orden_laboratorio.read',
+    'orden_laboratorio.create',
+    'orden_laboratorio.update',
+    ...[...resources.values()].flatMap((r) =>
+      [
+        'read',
+        ...(r.create ? ['create'] : []),
+        ...(r.update ? ['update'] : []),
+        ...(r.deletion !== 'none' ? ['delete'] : []),
+      ].map((a) => `${r.name}.${a}`),
+    ),
+  ];
 }

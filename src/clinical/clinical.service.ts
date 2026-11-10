@@ -34,6 +34,11 @@ const sections: Record<
   diagnosticos: { table: 'diagnostico_atencion', date: 'creado_en' },
   tratamientos: { table: 'prescripcion_item', date: 'creado_en' },
   vacunas: { table: 'vacunacion', date: 'aplicada_en' },
+  consentimientos: {
+    table: 'consentimiento',
+    date: 'emitido_en',
+    filter: 'r.atencion_id IS NOT NULL',
+  },
   reportes: { table: 'reporte_emitido', date: 'emitido_en' },
   documentos: { table: 'adjunto_clinico', date: 'creado_en' },
   controles: {
@@ -220,11 +225,13 @@ export class ClinicalService {
   ) {
     if (!rows.length) return;
     const targets: [string, string, string][] =
-      table === 'diagnostico_atencion'
-        ? [['diagnostico', 'diagnostico_id', 'nombre']]
-        : table === 'atencion_clinica'
-          ? [['profesional', 'profesional_id', 'nombre_profesional']]
-          : [];
+      table === 'adjunto_clinico'
+        ? [['archivo', 'archivo_id', 'nombre_original']]
+        : table === 'diagnostico_atencion'
+          ? [['diagnostico', 'diagnostico_id', 'nombre']]
+          : table === 'atencion_clinica'
+            ? [['profesional', 'profesional_id', 'nombre_profesional']]
+            : [];
     for (const [target, key, label] of targets) {
       await this.optional(async () => {
         const params: unknown[] = [
@@ -262,6 +269,56 @@ export class ClinicalService {
           [a.requestId],
         );
       });
+  }
+
+  agenda(identity: Identity, org: string, query: ClinicalQueryDto) {
+    if (
+      !query.from ||
+      !query.to ||
+      Date.parse(query.to) - Date.parse(query.from) > 31 * 86400000
+    )
+      throw new BadRequestException('Seleccione un intervalo de hasta 31 dias');
+    return this.access.run(identity, org, async (manager, a) => {
+      const params: unknown[] = [org],
+        scope = this.scope(a, 'cita', 'r', params);
+      const filters = [scope];
+      if (query.site) {
+        params.push(query.site);
+        filters.push(`r.sede_id=$${params.length}`);
+      }
+      if (query.responsible) {
+        params.push(query.responsible);
+        filters.push(`r.responsable_id=$${params.length}`);
+      }
+      const result = await this.page(
+        manager,
+        `SELECT r.*,r.inicio AS fecha,'cita'::text AS tipo_evento,to_jsonb(r)::text AS busqueda FROM vet.cita r WHERE r.organizacion_id=$1 AND ${filters.join(' AND ')}`,
+        params,
+        query,
+      );
+      const ids = result.data.map((row) => row.mascota_id);
+      await this.optional(async () => {
+        const values: unknown[] = [org, ids],
+          petScope = this.scope(a, 'mascota', 'r', values);
+        const pets: Row[] = await manager.query(
+          `SELECT r.id,r.nombre,r.codigo FROM vet.mascota r WHERE r.organizacion_id=$1 AND r.id=ANY($2::uuid[]) AND ${petScope}`,
+          values,
+        );
+        const names = new Map(pets.map((row) => [row.id, row]));
+        for (const row of result.data) {
+          row.nombre_paciente = names.get(row.mascota_id)?.nombre;
+          row.codigo_paciente = names.get(row.mascota_id)?.codigo;
+        }
+        await manager.query(
+          "SELECT vet.record_api_access('mascota',$1,'LIST')",
+          [a.requestId],
+        );
+      });
+      await manager.query("SELECT vet.record_api_access('cita',$1,'LIST')", [
+        a.requestId,
+      ]);
+      return result;
+    });
   }
 
   private options(query: ClinicalQueryDto) {
@@ -367,7 +424,10 @@ export class ClinicalService {
     const metadata: string[] = [];
     while (!table.columnMap.has('mascota_id')) {
       if (!table.parent) throw new BadRequestException('Seccion sin paciente');
-      const [parent, key] = table.parent;
+      const [parent, key] =
+        table.name === 'consentimiento'
+          ? ['atencion_clinica', 'atencion_id']
+          : table.parent;
       const next = `p${++depth}`;
       joins += ` JOIN vet."${parent}" ${next} ON ${next}.id=${alias}."${key}" AND ${next}.organizacion_id=${alias}.organizacion_id`;
       table = resource(parent);
@@ -415,6 +475,31 @@ export class ClinicalService {
         ]);
       } catch (error) {
         if (error instanceof ForbiddenException) unavailable.push(type);
+        else throw error;
+      }
+    }
+
+    if (!query.type || query.type === 'laboratorio') {
+      try {
+        const grants = a.permissions.get('orden_laboratorio.read');
+        if (!grants?.size) throw new ForbiddenException();
+        const labScope = this.access.scopeSql(
+          resource('atencion_clinica'),
+          'at',
+          grants,
+          params,
+        );
+        const attentionScope = this.scope(a, 'atencion_clinica', 'at', params);
+        branches.push(
+          `SELECT h.registro_id AS id,h.fecha,h.tipo AS tipo_evento,h.estado,to_jsonb(r) AS registro,to_jsonb(r)::text AS busqueda FROM vet.historial_mascota h JOIN vet.orden_laboratorio r ON r.id=h.registro_id AND r.organizacion_id=h.organizacion_id JOIN vet.atencion_clinica at ON at.id=r.atencion_id AND at.organizacion_id=r.organizacion_id WHERE h.organizacion_id=$1 AND h.mascota_id=$2 AND h.tipo='laboratorio' AND ${labScope} AND ${attentionScope}`,
+        );
+        await manager.query(
+          "SELECT vet.record_api_access('orden_laboratorio',$1,'LIST')",
+          [id],
+        );
+      } catch (error) {
+        if (error instanceof ForbiddenException)
+          unavailable.push('laboratorio');
         else throw error;
       }
     }

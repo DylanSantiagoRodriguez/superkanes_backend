@@ -22,6 +22,9 @@ export const immutable: Record<string, string[]> = {
   prescripcion: ['revision_id'],
   prescripcion_item: ['prescripcion_id'],
   consentimiento: [
+    'atencion_id',
+    'procedimiento',
+    'alcance',
     'servicio_id',
     'plantilla_id',
     'documento_archivo_id',
@@ -223,6 +226,30 @@ export class ResourceRulesService {
         throw new BadRequestException(
           'Esquema de formulario no valido o contiene referencias no admitidas',
         );
+      }
+    }
+    if (r.name === 'consentimiento' && !old) {
+      if (Boolean(merged.servicio_id) === Boolean(merged.atencion_id))
+        throw new BadRequestException('Seleccione una atencion o un servicio');
+      if (merged.atencion_id) {
+        if (
+          typeof merged.procedimiento !== 'string' ||
+          !merged.procedimiento.trim()
+        )
+          throw new BadRequestException('Indique el procedimiento');
+        await this.clinicalAuthor(manager, merged.atencion_id, access);
+        const files: Row[] = await manager.query(
+          'SELECT x.id FROM vet.adjunto_clinico x JOIN vet.revision_clinica v ON v.id=x.revision_id AND v.organizacion_id=x.organizacion_id WHERE x.organizacion_id=$1 AND x.archivo_id=$2 AND v.atencion_id=$3',
+          [
+            access.organizationId,
+            merged.documento_archivo_id,
+            merged.atencion_id,
+          ],
+        );
+        if (!files.length)
+          throw new BadRequestException(
+            'El documento debe estar adjunto a esta atencion',
+          );
       }
     }
     if (r.name === 'firma_consentimiento' && !old) {

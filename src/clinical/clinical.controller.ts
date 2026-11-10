@@ -1,4 +1,4 @@
-import { Body, Post } from '@nestjs/common';
+import { Body, Post, Patch } from '@nestjs/common';
 import { ResourcePersistenceService } from '../resources/resource-persistence.service';
 import {
   Controller,
@@ -89,6 +89,49 @@ export class ClinicalController {
       uuid(id),
       body,
       uuid(key),
+      version,
+    );
+  }
+  @Post('consentimientos/:id/responder')
+  @ApiHeader({ name: 'If-Match', required: true })
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  respond(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Headers('idempotency-key') key: string,
+    @Headers('if-match') version: string,
+  ) {
+    return this.persistence.respondClinicalConsent(
+      req.identity,
+      uuid(org),
+      uuid(id),
+      body,
+      uuid(key),
+      version,
+    );
+  }
+  @Get('agenda')
+  agenda(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+    @Query() query: ClinicalQueryDto,
+  ) {
+    return this.service.agenda(req.identity, uuid(org), query);
+  }
+  @Patch('citas/:id/llegada')
+  @ApiHeader({ name: 'If-Match', required: true })
+  arrival(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+    @Param('id') id: string,
+    @Headers('if-match') version: string,
+  ) {
+    return this.persistence.appointmentArrival(
+      req.identity,
+      uuid(org),
+      uuid(id),
       version,
     );
   }

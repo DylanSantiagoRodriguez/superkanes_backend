@@ -122,4 +122,6 @@ export class CitaResponseDto {
   actualizado_por!: string | null;
   @ApiProperty({ required: false, nullable: false, type: 'number' })
   version!: number;
+  @ApiProperty({ nullable: true, type: 'string', format: 'date-time' })
+  llegada_en!: string | null;
 }

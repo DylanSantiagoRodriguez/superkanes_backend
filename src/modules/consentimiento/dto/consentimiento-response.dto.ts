@@ -20,7 +20,7 @@ export class ConsentimientoResponseDto {
     type: 'string',
     format: 'uuid',
   })
-  servicio_id!: string;
+  servicio_id!: string | null;
   @ApiProperty({
     required: true,
     nullable: false,
@@ -81,4 +81,10 @@ export class ConsentimientoResponseDto {
   actualizado_por!: string | null;
   @ApiProperty({ required: false, nullable: false, type: 'number' })
   version!: number;
+  @ApiProperty({ nullable: true, type: 'string' })
+  atencion_id!: string | null;
+  @ApiProperty({ nullable: true, type: 'string' })
+  procedimiento!: string | null;
+  @ApiProperty({ nullable: true, type: 'string' })
+  alcance!: string | null;
 }

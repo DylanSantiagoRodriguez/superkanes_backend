@@ -88,4 +88,18 @@ export class CreateFirmaConsentimientoDto {
     enum: [],
   })
   hash_documento_aceptado!: string;
+  @ApiProperty({
+    required: false,
+    type: 'string',
+    enum: ['aceptado', 'rechazado'],
+  })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @DatabaseValue({
+    name: 'decision',
+    type: 'text',
+    nullable: false,
+    default: "'aceptado'",
+    enum: ['aceptado', 'rechazado'],
+  })
+  decision?: 'aceptado' | 'rechazado';
 }
