@@ -1,3 +1,4 @@
+import { PatientWeights1794322000000 } from './migrations/1794322000000-patient-weights';
 import { ClinicalDocumentArchive1794321000000 } from './migrations/1794321000000-clinical-document-archive';
 import { LaboratoryWorkflow1794320000000 } from './migrations/1794320000000-laboratory-workflow';
 import { AppointmentScheduling1794319000000 } from './migrations/1794319000000-appointment-scheduling';
@@ -51,6 +52,7 @@ export default new DataSource({
     AppointmentScheduling1794319000000,
     LaboratoryWorkflow1794320000000,
     ClinicalDocumentArchive1794321000000,
+    PatientWeights1794322000000,
   ],
   logging: ['error', 'migration'],
   extra: { max: 1, connectionTimeoutMillis: 10000 },

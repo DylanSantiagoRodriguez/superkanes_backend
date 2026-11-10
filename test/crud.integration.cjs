@@ -177,6 +177,7 @@ async function main() {
     if (process.env.TEST_STORAGE === 'true') await require('./clinical-document-archive.integration.cjs')({base,request,owner,org,otherOrg,ids,adminToken,staffToken,app});
     if (process.env.TEST_STORAGE === 'true') await require('./clinical-documents.integration.cjs')({base,request,owner,org,otherOrg,ids,adminToken,staffToken});
     if (process.env.TEST_BROWSER === 'true') await require('../../superkanes_frontend/test/patient-chart-browser.cjs')({base,adminToken,renewedToken:await token(),user});
+    await require('./patient-profiles.integration.cjs')({request,owner,org,otherOrg,ids,staffToken,base,adminToken,user});
     await require('./relation-search.integration.cjs')({request,owner,org,otherOrg,ids,staffToken,base,adminToken,user});
     await patch('tutor', { nombres: 'Ana Maria' });
     await request('PATCH', `/tutor/${ids.tutor}`, { nombres: 'Anterior' }, 412, { 'If-Match': '"1"' });

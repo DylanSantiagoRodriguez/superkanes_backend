@@ -1,5 +1,7 @@
+import { createHash } from 'node:crypto';
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -11,7 +13,7 @@ import {
   ResourceAccessService,
 } from '../resources/resource-access.service';
 import { resource, Row } from '../resources/resource-registry';
-import { uuid } from '../resources/resource-validation';
+import { uuid, object, field } from '../resources/resource-validation';
 import { ClinicalQueryDto } from './clinical-query.dto';
 
 const sections: Record<
@@ -41,6 +43,7 @@ const sections: Record<
   },
   reportes: { table: 'reporte_emitido', date: 'emitido_en' },
   documentos: { table: 'adjunto_clinico', date: 'creado_en' },
+  citas: { table: 'cita', date: 'inicio' },
   controles: {
     table: 'cita',
     date: 'inicio',
@@ -164,6 +167,158 @@ export class ClinicalService {
         ? this.timeline(manager, a, id, query)
         : this.rows(manager, a, id, section, query);
     });
+  }
+
+  saveWeight(
+    identity: Identity,
+    org: string,
+    id: string,
+    body: unknown,
+    key: string,
+  ) {
+    const input = object(body);
+    if (
+      Object.keys(input).some(
+        (k) =>
+          !['valor', 'medida_en', 'sede_id', 'cita_id', 'notas'].includes(k),
+      )
+    )
+      throw new BadRequestException('Campo no permitido');
+    const valor = field(
+      {
+        name: 'valor',
+        type: 'numeric(8,3)',
+        nullable: false,
+        default: null,
+        enum: [],
+      },
+      input.valor,
+    );
+    if (Number(valor) <= 0)
+      throw new BadRequestException('El peso debe ser positivo');
+    const medida = field(
+      resource('medicion_clinica').columnMap.get('medida_en')!,
+      input.medida_en,
+    );
+    if (Date.parse(String(medida)) > Date.now() + 60000)
+      throw new BadRequestException('El pesaje no puede ser futuro');
+    const site = uuid(input.sede_id, 'sede_id');
+    const appointment = input.cita_id ? uuid(input.cita_id, 'cita_id') : null;
+    if (
+      input.notas !== undefined &&
+      (typeof input.notas !== 'string' ||
+        input.notas.length > 2000 ||
+        input.notas.includes('\0'))
+    )
+      throw new BadRequestException('Notas no validas');
+    const notes = typeof input.notas === 'string' ? input.notas.trim() : null;
+    const hash = createHash('sha256')
+      .update(JSON.stringify([id, valor, medida, site, appointment, notes]))
+      .digest('hex');
+    return this.access.run(identity, org, async (manager, a) => {
+      await this.patient(manager, a, id);
+      const grants = this.access.authorize(
+        a,
+        resource('medicion_clinica'),
+        'create',
+      );
+      if (!grants.has(null) && !grants.has(site))
+        throw new ForbiddenException('Sede fuera de alcance');
+      const params: unknown[] = [org, site];
+      const siteScope = this.scope(a, 'sede', 'r', params);
+      const sites: Row[] = await manager.query(
+        `SELECT r.id FROM vet.sede r WHERE r.organizacion_id=$1 AND r.id=$2 AND ${siteScope}`,
+        params,
+      );
+      if (!sites.length) throw new NotFoundException('Sede no disponible');
+      if (appointment) {
+        const values: unknown[] = [org, appointment, id, site];
+        const scope = this.scope(a, 'cita', 'r', values);
+        const linked: Row[] = await manager.query(
+          `SELECT r.id FROM vet.cita r WHERE r.organizacion_id=$1 AND r.id=$2 AND r.mascota_id=$3 AND r.sede_id=$4 AND ${scope}`,
+          values,
+        );
+        if (!linked.length)
+          throw new NotFoundException(
+            'Cita no disponible para este paciente y sede',
+          );
+      }
+      await manager.query(
+        'SELECT pg_advisory_xact_lock(hashtextextended($1,0))',
+        [`${org}:${a.userId}:${key}`],
+      );
+      const prior: Row[] = await manager.query(
+        'SELECT resource,request_hash,response FROM api.idempotency WHERE organizacion_id=$1 AND usuario_id=$2 AND key=$3 AND expires_at>now()',
+        [org, a.userId, key],
+      );
+      if (prior[0]) {
+        if (
+          prior[0].resource !== 'patient-weight' ||
+          prior[0].request_hash !== hash
+        )
+          throw new ConflictException('Idempotency-Key ya utilizado');
+        return { data: prior[0].response };
+      }
+      const [saved]: Row[] = await manager.query(
+        'INSERT INTO vet.peso_mascota(organizacion_id,mascota_id,sede_id,cita_id,valor,medida_en,notas,creado_por) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
+        [org, id, site, appointment, valor, medida, notes, a.userId],
+      );
+      await manager.query(
+        'DELETE FROM api.idempotency WHERE organizacion_id=$1 AND usuario_id=$2 AND key=$3 AND expires_at<=now()',
+        [org, a.userId, key],
+      );
+      await manager.query(
+        'INSERT INTO api.idempotency(organizacion_id,usuario_id,key,resource,request_hash,response) VALUES($1,$2,$3,$4,$5,$6)',
+        [org, a.userId, key, 'patient-weight', hash, JSON.stringify(saved)],
+      );
+      return { data: saved };
+    });
+  }
+
+  private async weights(
+    manager: EntityManager,
+    a: Access,
+    id: string,
+    query: ClinicalQueryDto,
+  ) {
+    const params: unknown[] = [a.organizationId, id];
+    const grants = this.access.authorize(
+      a,
+      resource('medicion_clinica'),
+      'read',
+    );
+    const clinicalScope = this.access.scopeSql(
+      resource('medicion_clinica'),
+      'm',
+      grants,
+      params,
+    );
+    // Standalone observations use the same measurement grants, scoped by their site.
+    const manualScope = this.access.scopeSql(
+      resource('atencion_clinica'),
+      'w',
+      grants,
+      params,
+    );
+    const sql = `SELECT w.id,w.valor,w.medida_en,w.medida_en AS fecha,'peso'::text AS tipo,'kg'::text AS unidad,
+      'peso_mascota'::text AS tipo_evento,NULL::uuid AS atencion_id,w.cita_id,w.notas,to_jsonb(w)::text AS busqueda
+      FROM vet.peso_mascota w WHERE w.organizacion_id=$1 AND w.mascota_id=$2 AND ${manualScope}
+      UNION ALL SELECT m.id,m.valor,m.medida_en,m.medida_en AS fecha,'peso','kg','medicion_clinica',c.id,c.cita_id,NULL::text,to_jsonb(m)::text
+      FROM vet.medicion_clinica m JOIN vet.revision_clinica v ON v.id=m.revision_id AND v.organizacion_id=m.organizacion_id
+      JOIN vet.atencion_clinica c ON c.id=v.atencion_id AND c.organizacion_id=v.organizacion_id
+      WHERE m.organizacion_id=$1 AND c.mascota_id=$2 AND m.tipo='peso' AND m.unidad='kg' AND c.estado<>'anulada'
+      AND v.numero=(SELECT max(v2.numero) FROM vet.revision_clinica v2 WHERE v2.organizacion_id=v.organizacion_id AND v2.atencion_id=v.atencion_id)
+      AND ${clinicalScope}`;
+    const result = await this.page(manager, sql, params, query);
+    await manager.query(
+      "SELECT vet.record_api_access('medicion_clinica',$1,'LIST')",
+      [id],
+    );
+    await manager.query(
+      "SELECT vet.record_api_access('peso_mascota',$1,'LIST')",
+      [id],
+    );
+    return result;
   }
 
   details(identity: Identity, org: string, id: string) {
@@ -409,6 +564,7 @@ export class ClinicalService {
     section: string,
     query: ClinicalQueryDto,
   ) {
+    if (section === 'peso') return this.weights(manager, a, id, query);
     const definition = sections[section];
     if (!definition) throw new NotFoundException('Seccion no disponible');
     const params: unknown[] = [a.organizationId, id];
@@ -479,6 +635,20 @@ export class ClinicalService {
       }
     }
 
+    if (!query.type || query.type === 'cita') {
+      try {
+        const scope = this.scope(a, 'cita', 'r', params);
+        branches.push(
+          `SELECT r.id,r.inicio AS fecha,'cita'::text AS tipo_evento,r.estado,to_jsonb(r) AS registro,to_jsonb(r)::text AS busqueda FROM vet.cita r WHERE r.organizacion_id=$1 AND r.mascota_id=$2 AND ${scope}`,
+        );
+        await manager.query("SELECT vet.record_api_access('cita',$1,'LIST')", [
+          id,
+        ]);
+      } catch (error) {
+        if (error instanceof ForbiddenException) unavailable.push('cita');
+        else throw error;
+      }
+    }
     if (!query.type || query.type === 'laboratorio') {
       try {
         const grants = a.permissions.get('orden_laboratorio.read');

@@ -1,0 +1,40 @@
+const assert=require('node:assert/strict');
+const {randomUUID}=require('node:crypto');
+module.exports=async function profiles({request,owner,org,otherOrg,ids,staffToken,base,adminToken,user}){
+ const tutor=(await request('POST','/tutor',{nombres:'Tutor perfil',apellidos:'Prueba'},201)).data;
+ const pet=(await request('POST','/mascota',{codigo:'PROFILE-PET',nombre:'Paciente perfil',especie_id:ids.especie,tutor_principal_id:tutor.id},201)).data;
+ const second=(await request('POST','/mascota',{codigo:'PROFILE-SECOND',nombre:'Segunda mascota perfil',especie_id:ids.especie,tutor_principal_id:tutor.id},201)).data;
+ const appointment=(await request('POST','/cita',{mascota_id:pet.id,sede_id:ids.sede,tutor_contacto_id:tutor.id,tipo:'clinica',inicio:'2027-08-01T14:00:00Z',fin:'2027-08-01T14:30:00Z',notas:'Control registrado en perfil'},201)).data;
+ const path=`/clinica/pacientes/${pet.id}`;
+ const body={valor:'12.500',medida_en:new Date(Date.now()-86400000*2).toISOString(),sede_id:ids.sede,notas:'Pesaje manual de prueba'};
+ const key=randomUUID();
+ const first=(await request('POST',path+'/pesos',body,201,{'Idempotency-Key':key})).data;
+ assert.equal((await request('POST',path+'/pesos',body,201,{'Idempotency-Key':key})).data.id,first.id);
+ await request('POST',path+'/pesos',{...body,valor:'13'},409,{'Idempotency-Key':key});
+ for(const valor of ['0','-1','NaN','1.2345','100000'])await request('POST',path+'/pesos',{...body,valor},400);
+ await request('POST',path+'/pesos',{...body,medida_en:'2039-01-01T00:00:00Z'},400);
+ await request('POST',path+'/pesos',{...body,creado_por:user},400);
+ await request('POST',path+'/pesos',{...body,cita_id:ids.cita},404);
+ await request('POST',path+'/pesos',body,403,{Authorization:`Bearer ${staffToken}`});
+ await request('GET',path+'/registros/peso',undefined,403,{Authorization:`Bearer ${staffToken}`});
+ await request('POST',path+'/pesos',body,404,{'X-Organization-Id':otherOrg});
+ await request('GET',path+'/registros/peso',undefined,404,{'X-Organization-Id':otherOrg});
+ const last=(await request('POST',path+'/pesos',{...body,valor:'13.200',medida_en:new Date(Date.now()-86400000).toISOString(),cita_id:appointment.id},201)).data;
+ const latest=(await request('GET',path)).data.overview.peso.data[0];assert.equal(latest.id,last.id);assert.equal(latest.valor,'13.200');
+ const page=await request('GET',path+'/registros/peso?limit=1');assert.equal(page.data[0].id,last.id);
+ const next=await request('GET',path+'/registros/peso?limit=1&after='+page.page.next);assert.equal(next.data[0].id,first.id);assert.equal(next.page.next,null);
+ assert.ok((await request('GET',path+'/registros/historia?type=cita')).data.some(r=>r.id===appointment.id));
+ await request('PATCH',`/cita/${appointment.id}`,{estado:'cancelada'},200,{'If-Match':`"${appointment.version}"`});
+ assert.equal((await request('GET',path+'/registros/citas')).data[0].estado,'cancelada');
+ await assert.rejects(owner.query('UPDATE vet.peso_mascota SET valor=1 WHERE id=$1',[first.id]));
+ const [role]=await owner.query("INSERT INTO vet.rol(organizacion_id,nombre) VALUES($1,'Pesos con alcance de sede') RETURNING id",[org]);
+ await owner.query('INSERT INTO vet.rol_permiso(organizacion_id,rol_id,permiso_id) SELECT $1,$2,id FROM vet.permiso WHERE codigo=ANY($3::text[])',[org,role.id,['medicion_clinica.read','medicion_clinica.create']]);
+ const [site]=await owner.query("INSERT INTO vet.sede(organizacion_id,nombre,codigo) VALUES($1,'Sede pesos restringida','PESO-SCOPE') RETURNING id",[org]);
+ const [assignment]=await owner.query('INSERT INTO vet.asignacion_rol(organizacion_id,membresia_id,rol_id,sede_id) VALUES($1,$2,$3,$4) RETURNING id',[org,ids.membresia,role.id,site.id]);
+ try{
+  assert.equal((await request('GET',path+'/registros/peso',undefined,200,{Authorization:`Bearer ${staffToken}`})).data.length,0);
+  await request('POST',path+'/pesos',body,403,{Authorization:`Bearer ${staffToken}`});
+ }finally{await owner.query('DELETE FROM vet.asignacion_rol WHERE id=$1',[assignment.id]);}
+ if(process.env.TEST_BROWSER==='true')await require('../../superkanes_frontend/test/profiles-browser.cjs')({base,adminToken,user,tutor,pet,second,siteId:ids.sede});
+ console.log('OK: perfiles, citas canceladas, pesos manuales inmutables, comparación, paginación, idempotencia y permisos por sede.');
+};

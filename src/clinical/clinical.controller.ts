@@ -34,6 +34,23 @@ export class ClinicalController {
   ) {
     return this.service.summary(req.identity, uuid(org), uuid(id));
   }
+  @Post('pacientes/:id/pesos')
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  weight(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Headers('idempotency-key') key: string,
+  ) {
+    return this.service.saveWeight(
+      req.identity,
+      uuid(org),
+      uuid(id),
+      body,
+      uuid(key),
+    );
+  }
   @Get('pacientes/:id/registros/:section')
   records(
     @Req() req: AuthenticatedRequest,

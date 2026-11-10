@@ -17,6 +17,6 @@ export class ClinicalQueryDto {
   @IsOptional() @IsISO8601({ strict: true }) to?: string;
   @IsOptional() @IsString() @MaxLength(100) search?: string;
   @IsOptional()
-  @IsIn(['clinica', 'vacunacion', 'peluqueria', 'laboratorio'])
+  @IsIn(['clinica', 'vacunacion', 'peluqueria', 'laboratorio', 'cita'])
   type?: string;
 }
