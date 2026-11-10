@@ -1,3 +1,5 @@
+import { EntityManager } from 'typeorm';
+import type { Access } from '../resources/resource-access.service';
 import {
   BadRequestException,
   ConflictException,
@@ -183,6 +185,95 @@ export class StorageService {
       return { data: row };
     });
   }
+
+  async storeClinical(
+    manager: EntityManager,
+    access: Access,
+    buffer: Buffer,
+    name: string,
+    mime: string,
+    category: string,
+  ) {
+    const r = resource('archivo');
+    for (const action of ['create', 'read'] as const)
+      this.access.scopeSql(
+        r,
+        'r',
+        this.access.authorize(access, r, action),
+        [],
+      );
+    const id = randomUUID(),
+      objectKey = `${access.organizationId}/clinical/${id}`;
+    let version: string | undefined;
+    try {
+      version = (
+        await this.storage().send(
+          new PutObjectCommand({
+            Bucket: this.bucket,
+            Key: objectKey,
+            Body: buffer,
+            ContentType: mime,
+          }),
+        )
+      ).VersionId;
+    } catch {
+      throw new ServiceUnavailableException('No se pudo guardar el documento');
+    }
+    const result = await manager
+      .getRepository(ArchivoEntity)
+      .createQueryBuilder()
+      .insert()
+      .values({
+        id,
+        organizacion_id: access.organizationId,
+        creado_por: access.userId,
+        proveedor: 'minio',
+        contenedor: this.bucket,
+        ruta_relativa: objectKey,
+        version_objeto: version ?? null,
+        nombre_original: name,
+        mime_detectado: mime,
+        tamano_bytes: String(buffer.length),
+        sha256: createHash('sha256').update(buffer).digest('hex'),
+        categoria: category,
+        estado_analisis: 'disponible',
+      })
+      .returning('*')
+      .execute();
+    return (result.raw as Row[])[0];
+  }
+
+  async clinicalContent(data: Row, org: string) {
+    if (
+      data.proveedor !== 'minio' ||
+      data.contenedor !== this.bucket ||
+      data.estado_analisis !== 'disponible' ||
+      !String(data.ruta_relativa).startsWith(`${org}/clinical/`)
+    )
+      throw new NotFoundException('Documento no disponible');
+    try {
+      const object = await this.storage().send(
+        new GetObjectCommand({
+          Bucket: this.bucket,
+          Key: String(data.ruta_relativa),
+          ...(typeof data.version_objeto === 'string' && data.version_objeto
+            ? { VersionId: String(data.version_objeto) }
+            : {}),
+        }),
+      );
+      if (!object.Body || Number(object.ContentLength) > 20 * 1024 * 1024)
+        throw new Error('size');
+      const buffer = Buffer.from(await object.Body.transformToByteArray());
+      if (createHash('sha256').update(buffer).digest('hex') !== data.sha256)
+        throw new Error('hash');
+      return buffer;
+    } catch {
+      throw new ServiceUnavailableException(
+        'Documento temporalmente no disponible',
+      );
+    }
+  }
+
   async content(identity: Identity, org: string, id: string) {
     const { data } = await this.persistence.get(
       identity,

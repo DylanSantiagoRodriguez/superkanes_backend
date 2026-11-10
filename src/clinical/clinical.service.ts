@@ -34,6 +34,7 @@ const sections: Record<
   diagnosticos: { table: 'diagnostico_atencion', date: 'creado_en' },
   tratamientos: { table: 'prescripcion_item', date: 'creado_en' },
   vacunas: { table: 'vacunacion', date: 'aplicada_en' },
+  reportes: { table: 'reporte_emitido', date: 'emitido_en' },
   documentos: { table: 'adjunto_clinico', date: 'creado_en' },
   controles: {
     table: 'cita',
@@ -196,6 +197,7 @@ export class ClinicalService {
             id,
             'LIST',
           ]);
+          await this.enrich(manager, a, name, records.slice(0, 1000));
           return {
             data: records.slice(0, 1000),
             has_more: records.length > 1000,
@@ -208,6 +210,58 @@ export class ClinicalService {
       );
       return { data: { revision: rows[0], details } };
     });
+  }
+
+  private async enrich(
+    manager: EntityManager,
+    a: Access,
+    table: string,
+    rows: Row[],
+  ) {
+    if (!rows.length) return;
+    const targets: [string, string, string][] =
+      table === 'diagnostico_atencion'
+        ? [['diagnostico', 'diagnostico_id', 'nombre']]
+        : table === 'atencion_clinica'
+          ? [['profesional', 'profesional_id', 'nombre_profesional']]
+          : [];
+    for (const [target, key, label] of targets) {
+      await this.optional(async () => {
+        const params: unknown[] = [
+          a.organizationId,
+          rows.map((row) => row[key]),
+        ];
+        const scope = this.scope(a, target, 'r', params);
+        const names: Row[] = await manager.query(
+          `SELECT r.id,r."${label}" FROM vet."${target}" r WHERE r.organizacion_id=$1 AND r.id=ANY($2::uuid[]) AND ${scope}`,
+          params,
+        );
+        const map = new Map(names.map((row) => [row.id, row[label]]));
+        for (const row of rows) row[label] = map.get(row[key]) ?? null;
+        await manager.query('SELECT vet.record_api_access($1,$2,$3)', [
+          target,
+          a.requestId,
+          'LIST',
+        ]);
+      });
+    }
+    if (table === 'atencion_clinica')
+      await this.optional(async () => {
+        const params: unknown[] = [a.organizationId, rows.map((row) => row.id)];
+        const scope = this.scope(a, 'revision_clinica', 'r', params);
+        const revisions: Row[] = await manager.query(
+          `SELECT DISTINCT ON(r.atencion_id) r.atencion_id,r.motivo_consulta FROM vet.revision_clinica r WHERE r.organizacion_id=$1 AND r.atencion_id=ANY($2::uuid[]) AND ${scope} ORDER BY r.atencion_id,r.numero DESC`,
+          params,
+        );
+        const map = new Map(
+          revisions.map((row) => [row.atencion_id, row.motivo_consulta]),
+        );
+        for (const row of rows) row.motivo_consulta = map.get(row.id) ?? null;
+        await manager.query(
+          "SELECT vet.record_api_access('revision_clinica',$1,'LIST')",
+          [a.requestId],
+        );
+      });
   }
 
   private options(query: ClinicalQueryDto) {
@@ -301,7 +355,11 @@ export class ClinicalService {
     const definition = sections[section];
     if (!definition) throw new NotFoundException('Seccion no disponible');
     const params: unknown[] = [a.organizationId, id];
-    const scope = this.scope(a, definition.table, 'r', params);
+    let scope = this.scope(a, definition.table, 'r', params);
+    if (definition.table === 'reporte_emitido') {
+      const revisionScope = this.scope(a, 'revision_clinica', 'v', params);
+      scope += ` AND EXISTS(SELECT 1 FROM vet.revision_clinica v WHERE v.organizacion_id=r.organizacion_id AND v.id::text=r.parametros->>'revision_id' AND ${revisionScope})`;
+    }
     let table = resource(definition.table),
       alias = 'r',
       joins = '',
@@ -321,6 +379,7 @@ export class ClinicalService {
     }
     const sql = `SELECT r.*,r."${definition.date}"::timestamptz AS fecha,'${definition.table}'::text AS tipo_evento,to_jsonb(r)::text AS busqueda${metadata.length ? ',' + metadata.join(',') : ''} FROM vet."${definition.table}" r${joins} WHERE r.organizacion_id=$1 AND ${alias}.mascota_id=$2 AND ${scope}${definition.filter ? ' AND ' + definition.filter : ''}`;
     const result = await this.page(manager, sql, params, query);
+    await this.enrich(manager, a, definition.table, result.data);
     await manager.query('SELECT vet.record_api_access($1,$2,$3)', [
       definition.table,
       id,
