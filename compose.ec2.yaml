@@ -1,0 +1,139 @@
+name: superkanes
+x-logging: &logging
+  driver: json-file
+  options: {max-size: '5m', max-file: '2'}
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: superkanes_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?required}
+      POSTGRES_DB: superkanes
+    command: ['postgres', '-c', 'shared_buffers=32MB', '-c', 'max_connections=40', '-c', 'work_mem=2MB']
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres-init.sh:/docker-entrypoint-initdb.d/10-app.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U superkanes_owner -d superkanes']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    mem_limit: 192m
+    memswap_limit: 384m
+    restart: unless-stopped
+    logging: *logging
+  minio:
+    image: superkanes-minio:ec2-2025-10-15
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?required}
+      GOMEMLIMIT: 160MiB
+    command: server /data --console-address ':9001'
+    volumes: [minio_data:/data]
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    mem_limit: 256m
+    memswap_limit: 512m
+    restart: unless-stopped
+    logging: *logging
+  minio-init:
+    image: superkanes-mc:ec2-2025-08-13
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?required}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?required}
+      S3_BUCKET: superkanes
+    entrypoint: ['/bin/sh', '/init.sh']
+    volumes: ['./docker/minio-init.sh:/init.sh:ro']
+    depends_on:
+      minio: {condition: service_healthy}
+    mem_limit: 128m
+    logging: *logging
+  migrate:
+    image: ${BACKEND_IMAGE:?required}
+    command: ['npm', 'run', 'migration:run:prod']
+    environment: &owner-env
+      DB_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: superkanes
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      NODE_OPTIONS: --max-old-space-size=192
+    depends_on:
+      postgres: {condition: service_healthy}
+    mem_limit: 320m
+    logging: *logging
+  backend:
+    image: ${BACKEND_IMAGE}
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=256
+      DB_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: superkanes
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD}
+      DB_POOL_MAX: 5
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:?required}
+      AUTH_ISSUER: superkanes-api
+      AUTH_AUDIENCE: superkanes-clients
+      CORS_ORIGINS: https://${APP_DOMAIN:?required}
+      SWAGGER_ENABLED: 'false'
+      S3_ENABLED: 'true'
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-2
+      S3_BUCKET: superkanes
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      minio-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://localhost:3000/api/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      start_period: 60s
+      timeout: 10s
+      retries: 3
+    mem_limit: 512m
+    memswap_limit: 1024m
+    restart: unless-stopped
+    logging: *logging
+  frontend:
+    image: ${FRONTEND_IMAGE:?required}
+    ports: ['127.0.0.1:5173:80']
+    depends_on:
+      backend: {condition: service_healthy}
+    mem_limit: 48m
+    restart: unless-stopped
+    logging: *logging
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+    ports: ['80:80', '443:443', '443:443/udp']
+    volumes:
+      - ./deploy/ec2/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [frontend]
+    mem_limit: 96m
+    restart: unless-stopped
+    logging: *logging
+  bootstrap:
+    image: ${BACKEND_IMAGE}
+    profiles: [setup]
+    environment: *owner-env
+    entrypoint: ['node', 'scripts/provision-local-admin.cjs']
+    volumes: ['./scripts:/app/scripts:ro']
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    mem_limit: 320m
+    logging: *logging
+volumes:
+  postgres_data:
+  minio_data:
+  caddy_data:
+  caddy_config:
