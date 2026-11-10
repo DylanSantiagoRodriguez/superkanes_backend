@@ -146,14 +146,35 @@ export function expectedVersion(header: unknown): number {
     throw new BadRequestException('If-Match invalido');
   return Number(header.replaceAll('"', ''));
 }
+export const relationSearchFields: Record<string, string[]> = {
+  mascota: ['nombre', 'codigo', 'microchip'],
+  tutor: ['nombres', 'apellidos', 'numero_documento', 'email'],
+};
+
 export interface ListQuery {
   limit: number;
   cursor?: string;
   filters: Row;
+  search?: string;
 }
 export function listQuery(r: Resource, query: Row): ListQuery {
-  if (Object.keys(query).some((k) => !['limit', 'after', 'filter'].includes(k)))
+  if (
+    Object.keys(query).some(
+      (k) => !['limit', 'after', 'filter', 'search'].includes(k),
+    )
+  )
     throw new BadRequestException('Parametro de consulta no permitido');
+  let search: string | undefined;
+  if (query.search !== undefined) {
+    if (
+      !Object.hasOwn(relationSearchFields, r.name) ||
+      typeof query.search !== 'string' ||
+      query.search.length > 120 ||
+      query.search.includes('\0')
+    )
+      throw new BadRequestException('Busqueda no valida');
+    search = query.search.trim() || undefined;
+  }
   const raw = query.limit ?? '25';
   if (typeof raw !== 'string' || !/^\d+$/.test(raw))
     throw new BadRequestException('limit invalido');
@@ -185,5 +206,5 @@ export function listQuery(r: Resource, query: Row): ListQuery {
       filters[key] = field(c, value);
     }
   }
-  return { limit, cursor, filters };
+  return { limit, cursor, filters, search };
 }

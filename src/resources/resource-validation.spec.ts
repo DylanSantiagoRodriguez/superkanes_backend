@@ -48,6 +48,19 @@ describe('Contratos de los 47 recursos', () => {
     ).toThrow();
     expect(() => listQuery(resource('tutor'), { order: 'id desc' })).toThrow();
   });
+  it('valida busqueda limitada a mascotas y tutores', () => {
+    expect(
+      listQuery(resource('mascota'), { search: '  Luna M001  ' }).search,
+    ).toBe('Luna M001');
+    expect(listQuery(resource('tutor'), { search: 'Ana Prueba' }).search).toBe(
+      'Ana Prueba',
+    );
+    for (const search of [[], {}, 'x'.repeat(121), 'a\0b'])
+      expect(() => listQuery(resource('mascota'), { search })).toThrow();
+    expect(() =>
+      listQuery(resource('archivo'), { search: 'privado' }),
+    ).toThrow();
+  });
   it('requiere control de version y conserva decimales exactos', () => {
     expect(() => expectedVersion(undefined)).toThrow();
     expect(expectedVersion('"2"')).toBe(2);

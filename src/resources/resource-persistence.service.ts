@@ -30,6 +30,7 @@ import {
 import {
   expectedVersion,
   listQuery,
+  relationSearchFields,
   object,
   payload,
   uuid,
@@ -821,6 +822,15 @@ export class ResourcePersistenceService {
         else {
           params.push(value);
           where.push(`r."${key}"=$${params.length}`);
+        }
+      }
+      if (options.search) {
+        // Fixed column allowlist, bound values, literal wildcard characters.
+        const columns = relationSearchFields[r.name];
+        const expression = `concat_ws(' ', ${columns.map((c) => `r."${c}"`).join(', ')})`;
+        for (const term of options.search.split(/\s+/)) {
+          params.push(`%${term.replace(/[\\%_]/g, '\\$&')}%`);
+          where.push(`${expression} ILIKE $${params.length}`);
         }
       }
       params.push(options.limit + 1);

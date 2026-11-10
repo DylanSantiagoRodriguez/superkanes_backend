@@ -8,6 +8,15 @@ import {
 } from 'class-validator';
 
 export class ListQueryDto {
+  @ApiPropertyOptional({
+    description:
+      'Busqueda por texto en mascotas y tutores; maximo 120 caracteres',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  search?: string;
+
   @ApiPropertyOptional({ default: '25', description: 'Entre 1 y 100' })
   @IsOptional()
   @IsString()
