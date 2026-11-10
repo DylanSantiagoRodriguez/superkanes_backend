@@ -170,6 +170,7 @@ async function main() {
     // Concurrencia, reintentos y limites del contrato.
     await request('PATCH', `/tutor/${ids.tutor}`, { nombres: 'Ana Maria' }, 428);
     await require('./patient-chart.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
+    await require('./clinical-workflow.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
     if (process.env.TEST_BROWSER === 'true') await require('../../superkanes_frontend/test/patient-chart-browser.cjs')({base,adminToken,user});
     await patch('tutor', { nombres: 'Ana Maria' });
     await request('PATCH', `/tutor/${ids.tutor}`, { nombres: 'Anterior' }, 412, { 'If-Match': '"1"' });

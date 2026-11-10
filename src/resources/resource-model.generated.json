@@ -3990,6 +3990,13 @@
         "nullable": true,
         "default": null,
         "enum": []
+      },
+      {
+        "name": "examen_fisico",
+        "type": "text",
+        "nullable": true,
+        "default": null,
+        "enum": []
       }
     ],
     "refs": [

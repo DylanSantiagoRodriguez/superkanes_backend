@@ -1,3 +1,4 @@
+import { validateMeasurement } from '../clinical/clinical-measurements';
 import {
   BadRequestException,
   ConflictException,
@@ -93,6 +94,7 @@ export class ResourceRulesService {
             `No se puede cambiar ${key}; cree una nueva relacion`,
           );
     const merged = { ...old, ...data };
+    if (r.name === 'medicion_clinica') validateMeasurement(merged);
     if (
       r.name === 'mascota_tutor' &&
       !old &&

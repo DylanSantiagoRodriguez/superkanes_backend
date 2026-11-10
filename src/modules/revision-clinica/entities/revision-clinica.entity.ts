@@ -38,6 +38,9 @@ export class RevisionClinicaEntity {
   anamnesis!: string | null;
 
   @Column({ type: 'text', nullable: true })
+  examen_fisico!: string | null;
+
+  @Column({ type: 'text', nullable: true })
   evaluacion!: string | null;
 
   @Column({ type: 'text', nullable: true })

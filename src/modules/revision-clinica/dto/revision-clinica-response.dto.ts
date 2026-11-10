@@ -39,6 +39,9 @@ export class RevisionClinicaResponseDto {
   motivo_consulta!: string;
   @ApiProperty({ required: false, nullable: true, type: 'string' })
   anamnesis!: string | null;
+
+  @ApiProperty({ nullable: true, type: 'string' })
+  examen_fisico!: string | null;
   @ApiProperty({ required: false, nullable: true, type: 'string' })
   evaluacion!: string | null;
   @ApiProperty({ required: false, nullable: true, type: 'string' })

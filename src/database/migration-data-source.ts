@@ -1,3 +1,5 @@
+import { ClinicalDetailVersion1794317000000 } from './migrations/1794317000000-clinical-detail-version';
+import { ClinicalExam1794316000000 } from './migrations/1794316000000-clinical-exam';
 import 'reflect-metadata';
 import { ClinicalDocument1793700000000 } from './migrations/1793700000000-clinical-document';
 import { config } from 'dotenv';
@@ -39,6 +41,8 @@ export default new DataSource({
     SecureResourceApi1790200002000,
     LocalAuth1790200003000,
     ClinicalDocument1793700000000,
+    ClinicalExam1794316000000,
+    ClinicalDetailVersion1794317000000,
   ],
   logging: ['error', 'migration'],
   extra: { max: 1, connectionTimeoutMillis: 10000 },

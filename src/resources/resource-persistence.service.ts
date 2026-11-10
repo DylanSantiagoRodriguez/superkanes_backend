@@ -52,6 +52,407 @@ export class ResourcePersistenceService {
     private readonly rules: ResourceRulesService,
   ) {}
 
+  /** Coordinated writes use the existing validation, scoped access and transaction. */
+  saveClinical(
+    identity: Identity,
+    org: string,
+    id: string,
+    body: unknown,
+    key: string,
+    etag: unknown,
+  ) {
+    const input = object(body);
+    if (
+      Object.keys(input).some(
+        (k) => !['revision', 'operations', 'close'].includes(k),
+      )
+    )
+      throw new BadRequestException('Campo no permitido');
+    const narrative = object(input.revision ?? {});
+    if (
+      Object.keys(narrative).some(
+        (k) =>
+          ![
+            'motivo_consulta',
+            'anamnesis',
+            'examen_fisico',
+            'evaluacion',
+            'plan',
+            'documento',
+          ].includes(k),
+      )
+    )
+      throw new BadRequestException('Campo clinico no permitido');
+    if (input.close !== undefined && typeof input.close !== 'boolean')
+      throw new BadRequestException('Cierre invalido');
+    const operations = input.operations ?? [];
+    if (!Array.isArray(operations) || operations.length > 100)
+      throw new BadRequestException('Demasiadas operaciones');
+    return this.clinicalOperation(
+      identity,
+      org,
+      id,
+      key,
+      etag,
+      input,
+      'clinical-save',
+      async (manager, a, revision, attention) => {
+        if (revision.estado !== 'borrador' || attention.estado === 'anulada')
+          throw new ConflictException('La revision no admite cambios');
+        // Require the same authenticated professional for the coordinated clinical workflow.
+        await this.rules.validate(
+          manager,
+          resource('atencion_clinica'),
+          { profesional_id: attention.profesional_id },
+          attention,
+          a,
+        );
+        const saved: Row[] = [];
+        for (const raw of operations) {
+          const op = object(raw);
+          if (
+            Object.keys(op).some(
+              (k) =>
+                !['resource', 'id', 'version', 'data', 'remove'].includes(k),
+            )
+          )
+            throw new BadRequestException('Operacion no valida');
+          if (
+            typeof op.resource !== 'string' ||
+            ![
+              'medicion_clinica',
+              'diagnostico_atencion',
+              'seccion_clinica',
+              'prescripcion',
+              'prescripcion_item',
+              'adjunto_clinico',
+            ].includes(op.resource)
+          )
+            throw new BadRequestException('Recurso no admitido en consulta');
+          if (op.remove !== undefined && typeof op.remove !== 'boolean')
+            throw new BadRequestException('Eliminacion invalida');
+          const r = resource(op.resource);
+          const action: Action = op.remove
+            ? 'delete'
+            : op.id
+              ? 'update'
+              : 'create';
+          const scope = this.access.authorize(a, r, action);
+          this.access.scopeSql(r, 'r', scope, []);
+          const old = op.id
+            ? await this.find(manager, r, uuid(op.id), a, action, true)
+            : undefined;
+          if (old)
+            this.checkVersion(old, expectedVersion(`"${String(op.version)}"`));
+          if (op.remove && !old)
+            throw new BadRequestException('Falta registro a retirar');
+          const rawData = object(op.data ?? {});
+          let parent: unknown = revision.id;
+          if (r.name === 'prescripcion_item') {
+            parent = old?.prescripcion_id ?? rawData.prescripcion_id;
+            const prescription = await this.find(
+              manager,
+              resource('prescripcion'),
+              uuid(parent),
+              a,
+              'read',
+            );
+            if (prescription.revision_id !== revision.id)
+              throw new ConflictException('Prescripcion de otra revision');
+          }
+          const parentKey =
+            r.name === 'prescripcion_item' ? 'prescripcion_id' : 'revision_id';
+          if (old && old[parentKey] !== parent)
+            throw new ConflictException('Detalle de otra revision');
+          if (rawData[parentKey] !== undefined && rawData[parentKey] !== parent)
+            throw new BadRequestException('Relacion clinica no permitida');
+          const data = payload(
+            r,
+            {
+              ...rawData,
+              [parentKey]: parent,
+              ...(r.name === 'prescripcion' && !old
+                ? { profesional_id: attention.profesional_id }
+                : {}),
+            },
+            !old,
+          );
+          if (op.remove) {
+            if (r.deletion !== 'hard')
+              throw new BadRequestException('Este detalle se conserva');
+            await manager.getRepository(r.entity).delete(String(old!.id));
+          } else {
+            await this.rules.validate(manager, r, data, old, a);
+            const row = old
+              ? await this.patch(manager, r, String(old.id), data)
+              : await this.insert(manager, r, data, a);
+            await this.find(manager, r, String(row.id), a, action);
+            saved.push({ resource: r.name, ...row });
+          }
+        }
+        const r = resource('revision_clinica');
+        const data = payload(
+          r,
+          {
+            ...narrative,
+            ...(input.close ? { estado: 'cerrada' } : {}),
+            motivo_consulta:
+              narrative.motivo_consulta ?? revision.motivo_consulta,
+          },
+          false,
+        );
+        if (input.close) {
+          const merged = { ...revision, ...data };
+          if (
+            ['motivo_consulta', 'evaluacion', 'plan'].some(
+              (k) => typeof merged[k] !== 'string' || !String(merged[k]).trim(),
+            )
+          )
+            throw new BadRequestException(
+              'Registre motivo, evaluacion y plan antes de cerrar',
+            );
+          await this.find(
+            manager,
+            resource('atencion_clinica'),
+            String(attention.id),
+            a,
+            'update',
+          );
+        }
+        await this.rules.validate(manager, r, data, revision, a);
+        const updated = await this.patch(manager, r, id, data);
+        if (input.close && attention.estado === 'abierta') {
+          const attentionData = { estado: 'cerrada' };
+          await this.rules.validate(
+            manager,
+            resource('atencion_clinica'),
+            attentionData,
+            attention,
+            a,
+          );
+          await this.patch(
+            manager,
+            resource('atencion_clinica'),
+            String(attention.id),
+            attentionData,
+          );
+        }
+        return { revision: updated, details: saved };
+      },
+    );
+  }
+
+  correctClinical(
+    identity: Identity,
+    org: string,
+    id: string,
+    body: unknown,
+    key: string,
+    etag: unknown,
+  ) {
+    const input = object(body);
+    if (
+      Object.keys(input).some((k) => k !== 'motivo_cambio') ||
+      typeof input.motivo_cambio !== 'string' ||
+      !input.motivo_cambio.trim() ||
+      input.motivo_cambio.length > 4000
+    )
+      throw new BadRequestException('Indique el motivo de la correccion');
+    return this.clinicalOperation(
+      identity,
+      org,
+      id,
+      key,
+      etag,
+      input,
+      'clinical-correct',
+      async (manager, a, previous, attention) => {
+        if (previous.estado !== 'cerrada' || attention.estado === 'anulada')
+          throw new ConflictException(
+            'Solo se corrigen revisiones cerradas de atenciones no anuladas',
+          );
+        await this.rules.validate(
+          manager,
+          resource('atencion_clinica'),
+          { profesional_id: attention.profesional_id },
+          attention,
+          a,
+        );
+        const revisionResource = resource('revision_clinica');
+        this.access.authorize(a, revisionResource, 'create');
+        const revisionData = payload(
+          revisionResource,
+          {
+            atencion_id: attention.id,
+            numero: Number(previous.numero) + 1,
+            revision_previa_id: id,
+            motivo_cambio: input.motivo_cambio,
+            motivo_consulta: previous.motivo_consulta,
+            anamnesis: previous.anamnesis,
+            examen_fisico: previous.examen_fisico,
+            evaluacion: previous.evaluacion,
+            plan: previous.plan,
+            documento: previous.documento,
+          },
+          true,
+        );
+        await this.rules.validate(
+          manager,
+          revisionResource,
+          revisionData,
+          undefined,
+          a,
+        );
+        const revision = await this.insert(
+          manager,
+          revisionResource,
+          revisionData,
+          a,
+        );
+        await this.find(
+          manager,
+          revisionResource,
+          String(revision.id),
+          a,
+          'create',
+        );
+        const prescriptionIds = new Map<string, string>();
+        for (const name of [
+          'seccion_clinica',
+          'medicion_clinica',
+          'diagnostico_atencion',
+          'prescripcion',
+          'prescripcion_item',
+          'adjunto_clinico',
+        ]) {
+          const r = resource(name);
+          // No silent partial corrections: cloning existing details requires read/create scope.
+          const rows: Row[] = await manager.query(
+            name === 'prescripcion_item'
+              ? 'SELECT r.* FROM vet.prescripcion_item r JOIN vet.prescripcion p ON p.id=r.prescripcion_id AND p.organizacion_id=r.organizacion_id WHERE p.organizacion_id=$1 AND p.revision_id=$2 LIMIT 1001'
+              : `SELECT * FROM vet."${name}" WHERE organizacion_id=$1 AND revision_id=$2 LIMIT 1001`,
+            [org, id],
+          );
+          if (rows.length > 1000)
+            throw new ConflictException(
+              'Revision demasiado extensa para correccion automatica',
+            );
+          if (!rows.length) continue;
+          this.access.authorize(a, r, 'create');
+          for (const row of rows) {
+            await this.find(manager, r, String(row.id), a, 'read');
+            const values: Row = Object.fromEntries(
+              r.columns
+                .filter((c) => !serverFields.has(c.name))
+                .map((c) => [c.name, row[c.name]]),
+            );
+            if (name === 'prescripcion_item')
+              values.prescripcion_id = prescriptionIds.get(
+                String(row.prescripcion_id),
+              );
+            else values.revision_id = revision.id;
+            if (name === 'prescripcion')
+              values.profesional_id = attention.profesional_id;
+            await this.rules.validate(manager, r, values, undefined, a);
+            const copy = await this.insert(manager, r, values, a);
+            await this.find(manager, r, String(copy.id), a, 'create');
+            if (name === 'prescripcion')
+              prescriptionIds.set(String(row.id), String(copy.id));
+          }
+        }
+        return {
+          revision: await this.find(
+            manager,
+            revisionResource,
+            String(revision.id),
+            a,
+            'read',
+          ),
+        };
+      },
+    );
+  }
+
+  private clinicalOperation(
+    identity: Identity,
+    org: string,
+    id: string,
+    key: string,
+    etag: unknown,
+    body: Row,
+    operation: string,
+    execute: (
+      manager: EntityManager,
+      a: Access,
+      revision: Row,
+      attention: Row,
+    ) => Promise<Row>,
+  ) {
+    const version = expectedVersion(etag);
+    const hash = createHash('sha256')
+      .update(JSON.stringify(canonical({ id, version, body, operation })))
+      .digest('hex');
+    return this.access.run(identity, org, async (manager, a) => {
+      const r = resource('revision_clinica');
+      const initial = await this.find(manager, r, id, a, 'read');
+      const attention = await this.find(
+        manager,
+        resource('atencion_clinica'),
+        String(initial.atencion_id),
+        a,
+        'read',
+        true,
+      );
+      const current = await this.find(
+        manager,
+        r,
+        id,
+        a,
+        operation === 'clinical-correct' ? 'read' : 'update',
+        true,
+      );
+      if (operation === 'clinical-correct')
+        this.access.authorize(a, r, 'create');
+      await manager.query(
+        'SELECT pg_advisory_xact_lock(hashtextextended($1,0))',
+        [`${org}:${a.userId}:${key}`],
+      );
+      const prior: { request_hash: string; resource: string; response: Row }[] =
+        await manager.query(
+          'SELECT request_hash,resource,response FROM api.idempotency WHERE organizacion_id=$1 AND usuario_id=$2 AND key=$3 AND expires_at>now()',
+          [org, a.userId, key],
+        );
+      if (prior[0]) {
+        if (prior[0].request_hash !== hash || prior[0].resource !== operation)
+          throw new ConflictException('Idempotency-Key ya utilizado');
+        const details = prior[0].response.details;
+        if (Array.isArray(details))
+          for (const raw of details) {
+            const detail = object(raw);
+            await this.find(
+              manager,
+              resource(String(detail.resource)),
+              uuid(detail.id),
+              a,
+              'read',
+            );
+          }
+        return { data: prior[0].response };
+      }
+      this.checkVersion(current, version);
+      const result = await execute(manager, a, current, attention);
+      await manager.query(
+        'DELETE FROM api.idempotency WHERE organizacion_id=$1 AND usuario_id=$2 AND key=$3 AND expires_at<=now()',
+        [org, a.userId, key],
+      );
+      await manager.query(
+        'INSERT INTO api.idempotency(organizacion_id,usuario_id,key,resource,request_hash,response) VALUES($1,$2,$3,$4,$5,$6)',
+        [org, a.userId, key, operation, hash, JSON.stringify(result)],
+      );
+      return { data: result };
+    });
+  }
+
   clinicalAuthor(identity: Identity, org: string) {
     return this.access.run(identity, org, async (manager, a) => {
       this.access.authorize(a, resource('atencion_clinica'), 'create');

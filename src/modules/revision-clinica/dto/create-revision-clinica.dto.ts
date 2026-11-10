@@ -97,6 +97,17 @@ export class CreateRevisionClinicaDto {
   @ApiProperty({ required: false, nullable: true, type: 'string' })
   @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
   @DatabaseValue({
+    name: 'examen_fisico',
+    type: 'text',
+    nullable: true,
+    default: null,
+    enum: [],
+  })
+  examen_fisico?: string | null;
+
+  @ApiProperty({ required: false, nullable: true, type: 'string' })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
+  @DatabaseValue({
     name: 'evaluacion',
     type: 'text',
     nullable: true,

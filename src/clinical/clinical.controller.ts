@@ -1,3 +1,5 @@
+import { Body, Post } from '@nestjs/common';
+import { ResourcePersistenceService } from '../resources/resource-persistence.service';
 import {
   Controller,
   Get,
@@ -20,7 +22,10 @@ import { ClinicalQueryDto } from './clinical-query.dto';
 @UseFilters(DatabaseErrorFilter)
 @Controller('resources/clinica')
 export class ClinicalController {
-  constructor(private readonly service: ClinicalService) {}
+  constructor(
+    private readonly service: ClinicalService,
+    private readonly persistence: ResourcePersistenceService,
+  ) {}
   @Get('pacientes/:id')
   summary(
     @Req() req: AuthenticatedRequest,
@@ -38,5 +43,53 @@ export class ClinicalController {
     @Query() query: ClinicalQueryDto,
   ) {
     return this.service.list(req.identity, uuid(org), uuid(id), section, query);
+  }
+  @Get('revisiones/:id')
+  details(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+    @Param('id') id: string,
+  ) {
+    return this.service.details(req.identity, uuid(org), uuid(id));
+  }
+  @Post('revisiones/:id/guardar')
+  @ApiHeader({ name: 'If-Match', required: true })
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  save(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Headers('idempotency-key') key: string,
+    @Headers('if-match') version: string,
+  ) {
+    return this.persistence.saveClinical(
+      req.identity,
+      uuid(org),
+      uuid(id),
+      body,
+      uuid(key),
+      version,
+    );
+  }
+  @Post('revisiones/:id/corregir')
+  @ApiHeader({ name: 'If-Match', required: true })
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  correct(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Headers('idempotency-key') key: string,
+    @Headers('if-match') version: string,
+  ) {
+    return this.persistence.correctClinical(
+      req.identity,
+      uuid(org),
+      uuid(id),
+      body,
+      uuid(key),
+      version,
+    );
   }
 }

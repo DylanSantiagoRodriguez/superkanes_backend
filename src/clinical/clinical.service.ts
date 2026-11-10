@@ -160,6 +160,56 @@ export class ClinicalService {
     });
   }
 
+  details(identity: Identity, org: string, id: string) {
+    return this.access.run(identity, org, async (manager, a) => {
+      const params: unknown[] = [org, id];
+      const scope = this.scope(a, 'revision_clinica', 'r', params);
+      const rows: Row[] = await manager.query(
+        `SELECT r.* FROM vet.revision_clinica r WHERE r.organizacion_id=$1 AND r.id=$2 AND ${scope}`,
+        params,
+      );
+      if (!rows[0]) throw new NotFoundException('Revision no disponible');
+      const details: Record<string, unknown> = {};
+      for (const name of [
+        'medicion_clinica',
+        'diagnostico_atencion',
+        'seccion_clinica',
+        'prescripcion',
+        'prescripcion_item',
+        'adjunto_clinico',
+      ]) {
+        details[name] = await this.optional(async () => {
+          const values: unknown[] = [org, id];
+          const detailScope = this.scope(a, name, 'r', values);
+          const from =
+            name === 'prescripcion_item'
+              ? 'vet.prescripcion_item r JOIN vet.prescripcion p ON p.id=r.prescripcion_id AND p.organizacion_id=r.organizacion_id'
+              : `vet."${name}" r`;
+          const relation =
+            name === 'prescripcion_item' ? 'p.revision_id' : 'r.revision_id';
+          const records: Row[] = await manager.query(
+            `SELECT r.* FROM ${from} WHERE r.organizacion_id=$1 AND ${relation}=$2 AND ${detailScope} ORDER BY r.creado_en,r.id LIMIT 1001`,
+            values,
+          );
+          await manager.query('SELECT vet.record_api_access($1,$2,$3)', [
+            name,
+            id,
+            'LIST',
+          ]);
+          return {
+            data: records.slice(0, 1000),
+            has_more: records.length > 1000,
+          };
+        });
+      }
+      await manager.query(
+        "SELECT vet.record_api_access('revision_clinica',$1,'READ')",
+        [id],
+      );
+      return { data: { revision: rows[0], details } };
+    });
+  }
+
   private options(query: ClinicalQueryDto) {
     const limit = Number(query.limit ?? 25);
     if (!Number.isInteger(limit) || limit < 1 || limit > 100)
