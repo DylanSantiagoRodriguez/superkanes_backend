@@ -231,3 +231,20 @@ La suite comprueba transacciones, permisos y sedes, organizaciones ajenas, curso
 - Consentimiento documental con evidencia escaneada; no se presenta como firma electrónica certificada ni se afirma validación legal del formato.
 - Hospitalización, anestesia, administración/dispensación de medicamentos, inventario y caja no tienen un circuito especializado en esta entrega.
 - La auditoría de dependencias de producción del backend mantiene tres avisos moderados transitivos; cero altos o críticos en la comprobación de esta entrega. No se forzaron cambios incompatibles de TypeORM.
+
+
+## Archivo automático del documento del editor en MinIO
+
+El guardado de `documento` en una revisión clínica ahora archiva su JSON validado y con formato en MinIO. Cubre **Guardar atención e historia**, el alta/edición de revisión, el guardado coordinado y la corrección vinculada. Se normalizan estilos que produce el navegador al pegar contenido: colores RGB, estilos vacíos, nombres de fuentes entre comillas y tamaños compatibles en píxeles. Permanecen las restricciones de estructura, tamaño, atributos y contenido activo.
+
+La migración adicional `1794321000000-clinical-document-archive` crea `vet.documento_clinico_version`. La relación explícita contiene `organizacion_id`, `mascota_id`, `atencion_id`, `revision_id`, `archivo_id`, versión de revisión, fecha y autor. Las claves foráneas compuestas impiden vincular un archivo histórico a otro paciente o atención. El paciente se determina en servidor desde la atención; no se toma de los atributos del editor.
+
+Los objetos usan la ruta `{organizacion}/clinical/pacientes/{mascota}/revisiones/{revision}/{archivo}.json`. Cada cambio documental genera un objeto y un registro inmutables; no se sobrescribe la versión anterior. Guardar contenido sin cambios no duplica el archivo. La versión S3, SHA-256 y tamaño se registran en `archivo`. PostgreSQL conserva también el JSON de trabajo para compatibilidad con el editor y los reportes existentes; el mismo contenido normalizado origina ambos registros dentro del caso de uso, sin una segunda vía de edición del archivo.
+
+Se requiere MinIO y permisos `archivo.create/read`, además de los permisos clínicos. Un fallo de almacenamiento devuelve `503` y revierte la escritura clínica. Un objeto subido cuyo commit resulte fallido o incierto puede quedar privado sin vínculo; no se elimina automáticamente. Las notas aún no guardadas permanecen en el formulario para reintentar.
+
+`GET /api/v1/storage/clinical/pacientes/:id/documentos` lista 25 versiones por página, con `after` UUID y filtro opcional `revision_id`. Requiere acceso al paciente, a la revisión/sede y al archivo. La descarga existente `GET /api/v1/storage/clinical/:id/content` verifica estos enlaces, permisos y hash. Se puede abrir el documento en la ficha del paciente y descargar el JSON original. Los PDF emitidos desde revisiones cerradas siguen siendo documentos distintos.
+
+Los documentos previos a esta función se conservan en su revisión. No se reescriben historias cerradas ni se afirma que ya estén archivadas. El siguiente guardado autorizado de un borrador con documento crea su archivo si falta. Recuperación: migración correctiva o respaldo coherente de PostgreSQL y MinIO; la reversión destructiva está bloqueada.
+
+La [especificación 003](../document-management/specs/003-documentos-paciente-minio/spec.md) contiene alcance y aceptación. Verificado con 25 pruebas unitarias, 4 pruebas HTTP de aplicación, compilación/lint y suite integrada de 423 comprobaciones HTTP más Chromium/MinIO reales: pegar formato, guardar/reabrir, descargar el archivo, permisos por sede/organización, hash, versiones, correcciones y rollback ante almacenamiento indisponible.

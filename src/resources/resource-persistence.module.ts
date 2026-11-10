@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ResourcePersistenceService } from './resource-persistence.service';
-import { ResourceAccessService } from './resource-access.service';
+import { ResourceAccessModule } from './resource-access.module';
+import { StorageCoreModule } from '../storage/storage-core.module';
 import { ResourceRulesService } from './resource-rules.service';
 
 @Module({
-  providers: [
-    ResourcePersistenceService,
-    ResourceAccessService,
-    ResourceRulesService,
-  ],
-  exports: [ResourcePersistenceService, ResourceAccessService],
+  imports: [ResourceAccessModule, StorageCoreModule],
+  providers: [ResourcePersistenceService, ResourceRulesService],
+  exports: [ResourcePersistenceService, ResourceAccessModule],
 })
 export class ResourcePersistenceModule {}

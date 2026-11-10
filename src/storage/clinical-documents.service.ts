@@ -223,6 +223,35 @@ export class ClinicalDocumentsService {
           if (!(error instanceof ForbiddenException)) throw error;
         }
       }
+      if (!authorized) {
+        try {
+          const params: unknown[] = [org, id];
+          const revisionScope = this.scope(
+            a,
+            'revision_clinica',
+            'read',
+            'r',
+            params,
+          );
+          const patientScope = this.scope(a, 'mascota', 'read', 'p', params);
+          const versions: Row[] = await manager.query(
+            `SELECT d.id FROM vet.documento_clinico_version d
+            JOIN vet.revision_clinica r ON r.organizacion_id=d.organizacion_id AND r.id=d.revision_id
+            JOIN vet.mascota p ON p.organizacion_id=d.organizacion_id AND p.id=d.mascota_id
+            WHERE d.organizacion_id=$1 AND d.archivo_id=$2 AND ${revisionScope} AND ${patientScope} LIMIT 1`,
+            params,
+          );
+          if (versions[0]) {
+            authorized = true;
+            await manager.query(
+              "SELECT vet.record_api_access('documento_clinico_version',$1,'READ')",
+              [versions[0].id],
+            );
+          }
+        } catch (error) {
+          if (!(error instanceof ForbiddenException)) throw error;
+        }
+      }
       if (!authorized) throw new NotFoundException('Documento no disponible');
       return {
         buffer: await this.storage.clinicalContent(archivo, org),

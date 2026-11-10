@@ -8,6 +8,8 @@ export function validateClinicalDocument(value: unknown): unknown {
     );
   };
   if (Buffer.byteLength(JSON.stringify(value) ?? '') > 1048576) fail();
+  // Normalize browser-produced styles without accepting arbitrary CSS.
+  value = structuredClone(value);
   let textLength = 0;
   let nodes = 0;
   const blocks = [
@@ -68,6 +70,8 @@ export function validateClinicalDocument(value: unknown): unknown {
       if (!n.attrs || typeof n.attrs !== 'object' || Array.isArray(n.attrs))
         fail();
       const attrs = n.attrs as Record<string, unknown>;
+      if (attrs.lineHeight === '' || attrs.lineHeight === 'normal')
+        attrs.lineHeight = null;
       for (const [key, val] of Object.entries(attrs)) {
         if (
           key === 'textAlign' &&
@@ -110,7 +114,11 @@ export function validateClinicalDocument(value: unknown): unknown {
     )
       fail();
     if (n.marks !== undefined) {
-      if (type !== 'text' || !Array.isArray(n.marks) || n.marks.length > 6)
+      if (
+        !['text', 'hardBreak'].includes(type) ||
+        !Array.isArray(n.marks) ||
+        n.marks.length > 6
+      )
         fail();
       for (const mark of n.marks as unknown[]) {
         if (!mark || typeof mark !== 'object' || Array.isArray(mark)) fail();
@@ -123,9 +131,35 @@ export function validateClinicalDocument(value: unknown): unknown {
             Array.isArray(m.attrs)
           )
             fail();
-          for (const [key, val] of Object.entries(
-            m.attrs as Record<string, unknown>,
-          )) {
+          const styles = m.attrs as Record<string, unknown>;
+          for (const key of Object.keys(styles)) {
+            let val = styles[key];
+            if (val === '') val = null;
+            if (
+              ['color', 'backgroundColor'].includes(key) &&
+              typeof val === 'string'
+            ) {
+              const rgb =
+                /^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*1(?:\.0+)?)?\s*\)$/.exec(
+                  val,
+                );
+              if (rgb && rgb.slice(1, 4).every((c) => Number(c) <= 255))
+                val =
+                  '#' +
+                  rgb
+                    .slice(1, 4)
+                    .map((c) => Number(c).toString(16).padStart(2, '0'))
+                    .join('');
+            }
+            if (key === 'fontFamily' && typeof val === 'string')
+              val = val.replace(/^(['"])(.*)\1$/, '$2');
+            if (
+              key === 'fontSize' &&
+              typeof val === 'string' &&
+              /^\d+(?:\.\d+)?px$/.test(val)
+            )
+              val = `${Number.parseFloat(val) * 0.75}pt`;
+            styles[key] = val;
             if (
               !['fontFamily', 'fontSize', 'color', 'backgroundColor'].includes(
                 key,

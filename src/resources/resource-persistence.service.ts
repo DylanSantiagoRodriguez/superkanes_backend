@@ -1,3 +1,4 @@
+import { ClinicalDocumentArchiveService } from '../storage/clinical-document-archive.service';
 import {
   BadRequestException,
   ConflictException,
@@ -50,6 +51,7 @@ export class ResourcePersistenceService {
   constructor(
     private readonly access: ResourceAccessService,
     private readonly rules: ResourceRulesService,
+    private readonly documents: ClinicalDocumentArchiveService,
   ) {}
 
   /** Coordinated writes use the existing validation, scoped access and transaction. */
@@ -221,6 +223,7 @@ export class ResourcePersistenceService {
         }
         await this.rules.validate(manager, r, data, revision, a);
         const updated = await this.patch(manager, r, id, data);
+        await this.documents.save(manager, a, updated);
         if (input.close && attention.estado === 'abierta') {
           const attentionData = { estado: 'cerrada' };
           await this.rules.validate(
@@ -1025,6 +1028,8 @@ export class ResourcePersistenceService {
       this.checkVersion(old, version);
       await this.rules.validate(manager, r, data, old, a);
       const row = await this.patch(manager, r, id, data);
+      if (r.name === 'revision_clinica')
+        await this.documents.save(manager, a, row);
       await this.find(manager, r, id, a, 'update');
       if (!r.tenant) await this.audit(manager, r, id, 'UPDATE_GLOBAL');
       return { data: this.project(r, row, a), requestId: a.requestId };
@@ -1121,7 +1126,12 @@ export class ResourcePersistenceService {
       .values(values)
       .returning('*')
       .execute();
-    return (result.raw as Row[])[0];
+    const row = (result.raw as Row[])[0];
+    if (r.name === 'revision_clinica') {
+      await this.find(manager, r, String(row.id), a, 'create');
+      await this.documents.save(manager, a, row);
+    }
+    return row;
   }
   private async patch(
     manager: EntityManager,

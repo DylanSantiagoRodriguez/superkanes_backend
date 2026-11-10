@@ -1,7 +1,6 @@
 const assert=require('node:assert/strict');
 const {randomUUID,createHash}=require('node:crypto');
 const {PDFDocument}=require('pdf-lib');
-const {S3Client,DeleteObjectCommand}=require('@aws-sdk/client-s3');
 module.exports=async function documents({base,request,owner,org,otherOrg,ids,adminToken,staffToken}) {
   const headers={Authorization:`Bearer ${adminToken}`,'X-Organization-Id':org};
   const attention=(await request('POST','/atencion_clinica/con-historia',{mascota_id:ids.mascota,sede_id:ids.sede,fecha_atencion:new Date().toISOString(),profesional_id:ids.profesional,motivo_consulta:'Documentos clínicos de prueba'},201)).data;
@@ -16,7 +15,6 @@ module.exports=async function documents({base,request,owner,org,otherOrg,ids,adm
   async function download(id,status=200,extra={}){
     const response=await fetch(`${base}/api/v1/storage/clinical/${id}/content`,{headers:{...headers,...extra}});assert.equal(response.status,status);return response;
   }
-  try {
     await upload(bytes,401,{Authorization:''});
     await upload(bytes,403,{Authorization:`Bearer ${staffToken}`});
     await upload(Buffer.from('%PDF-1.7 invalid'),400);
@@ -40,9 +38,4 @@ module.exports=async function documents({base,request,owner,org,otherOrg,ids,adm
       assert.equal(report.report.datos_identificacion_snapshot.patient.id,ids.mascota);
     }
     console.log('OK: adjuntos privados, PDF real, bytes originales, hash, permisos, cierre y reportes versionados idempotentes.');
-  }finally{
-    const rows=await owner.query("SELECT contenedor,ruta_relativa,version_objeto FROM vet.archivo WHERE organizacion_id=$1 AND ruta_relativa LIKE $2",[org,`${org}/clinical/%`]);
-    const client=new S3Client({endpoint:process.env.S3_ENDPOINT,region:process.env.S3_REGION||'us-east-1',forcePathStyle:true,credentials:{accessKeyId:process.env.MINIO_ROOT_USER,secretAccessKey:process.env.MINIO_ROOT_PASSWORD}});
-    try{for(const row of rows)await client.send(new DeleteObjectCommand({Bucket:row.contenedor,Key:row.ruta_relativa,VersionId:row.version_objeto||undefined}));}finally{client.destroy();}
-  }
 };

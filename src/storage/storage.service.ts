@@ -16,7 +16,6 @@ import {
 import { createHash, randomUUID } from 'node:crypto';
 import sharp from 'sharp';
 import { ResourceAccessService } from '../resources/resource-access.service';
-import { ResourcePersistenceService } from '../resources/resource-persistence.service';
 import { resource, Row } from '../resources/resource-registry';
 import { ArchivoEntity } from '../modules/archivo/entities/archivo.entity';
 import type { Identity } from '../auth/token.service';
@@ -57,7 +56,6 @@ export class StorageService {
   constructor(
     private readonly config: ConfigService,
     private readonly access: ResourceAccessService,
-    private readonly persistence: ResourcePersistenceService,
   ) {
     this.bucket = config.getOrThrow<string>('S3_BUCKET');
     if (config.get<boolean>('S3_ENABLED'))
@@ -193,6 +191,7 @@ export class StorageService {
     name: string,
     mime: string,
     category: string,
+    patientRevision?: { patientId: string; revisionId: string },
   ) {
     const r = resource('archivo');
     for (const action of ['create', 'read'] as const)
@@ -203,7 +202,9 @@ export class StorageService {
         [],
       );
     const id = randomUUID(),
-      objectKey = `${access.organizationId}/clinical/${id}`;
+      objectKey = patientRevision
+        ? `${access.organizationId}/clinical/pacientes/${patientRevision.patientId}/revisiones/${patientRevision.revisionId}/${id}.json`
+        : `${access.organizationId}/clinical/${id}`;
     let version: string | undefined;
     try {
       version = (
@@ -217,7 +218,10 @@ export class StorageService {
         )
       ).VersionId;
     } catch {
-      throw new ServiceUnavailableException('No se pudo guardar el documento');
+      throw new ServiceUnavailableException({
+        message: 'No se pudo guardar el documento',
+        code: 'CLINICAL_STORAGE_UNAVAILABLE',
+      });
     }
     const result = await manager
       .getRepository(ArchivoEntity)
@@ -275,12 +279,25 @@ export class StorageService {
   }
 
   async content(identity: Identity, org: string, id: string) {
-    const { data } = await this.persistence.get(
-      identity,
-      org,
-      ArchivoEntity,
-      id,
-    );
+    const data = await this.access.run(identity, org, async (manager, a) => {
+      const r = resource('archivo'),
+        params: unknown[] = [org, id];
+      const scope = this.access.scopeSql(
+        r,
+        'r',
+        this.access.authorize(a, r, 'read'),
+        params,
+      );
+      const rows: Row[] = await manager.query(
+        `SELECT r.* FROM vet.archivo r WHERE r.organizacion_id=$1 AND r.id=$2 AND ${scope}`,
+        params,
+      );
+      if (!rows[0]) throw new NotFoundException('Foto no disponible');
+      await manager.query("SELECT vet.record_api_access('archivo',$1,'READ')", [
+        id,
+      ]);
+      return rows[0];
+    });
     if (
       data.proveedor !== 'minio' ||
       data.contenedor !== this.bucket ||

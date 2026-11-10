@@ -1,8 +1,11 @@
+import { IsOptional, IsUUID } from 'class-validator';
+import { ClinicalDocumentArchiveService } from './clinical-document-archive.service';
 import {
   Controller,
   Get,
   Headers,
   Param,
+  Query,
   Post,
   Req,
   Res,
@@ -23,13 +26,29 @@ import type { AuthenticatedRequest } from '../auth/auth.guard';
 import { uuid } from '../resources/resource-validation';
 import { DatabaseErrorFilter } from '../resources/database-error.filter';
 import { ClinicalDocumentsService } from './clinical-documents.service';
+class DocumentArchiveQuery {
+  @IsOptional() @IsUUID() after?: string;
+  @IsOptional() @IsUUID() revision_id?: string;
+}
 @ApiTags('documentos-clinicos')
 @ApiBearerAuth()
 @ApiHeader({ name: 'X-Organization-Id', required: true })
 @UseFilters(DatabaseErrorFilter)
 @Controller('storage/clinical')
 export class ClinicalDocumentsController {
-  constructor(private readonly service: ClinicalDocumentsService) {}
+  constructor(
+    private readonly service: ClinicalDocumentsService,
+    private readonly archive: ClinicalDocumentArchiveService,
+  ) {}
+  @Get('pacientes/:id/documentos')
+  documents(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+    @Param('id') id: string,
+    @Query() query: DocumentArchiveQuery,
+  ) {
+    return this.archive.list(req.identity, uuid(org), uuid(id), query);
+  }
   @Post('revisiones/:id/adjuntos')
   @ApiConsumes('multipart/form-data')
   @ApiHeader({ name: 'Idempotency-Key', required: true })

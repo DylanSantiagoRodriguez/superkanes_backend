@@ -174,6 +174,7 @@ async function main() {
     await require('./clinical-consent.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
     await require('./clinical-agenda.integration.cjs')({base,adminToken,request,owner,org,otherOrg,ids,staffToken});
     await require('./clinical-laboratory.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
+    if (process.env.TEST_STORAGE === 'true') await require('./clinical-document-archive.integration.cjs')({base,request,owner,org,otherOrg,ids,adminToken,staffToken,app});
     if (process.env.TEST_STORAGE === 'true') await require('./clinical-documents.integration.cjs')({base,request,owner,org,otherOrg,ids,adminToken,staffToken});
     if (process.env.TEST_BROWSER === 'true') await require('../../superkanes_frontend/test/patient-chart-browser.cjs')({base,adminToken,renewedToken:await token(),user});
     await patch('tutor', { nombres: 'Ana Maria' });
@@ -235,7 +236,7 @@ async function main() {
   } finally {
     if (app) await app.close();
     if (jwks) await new Promise(resolve => jwks.close(resolve));
-    if (owner?.isInitialized && process.env.TEST_STORAGE === 'true') {
+    if (owner?.isInitialized && (process.env.TEST_STORAGE === 'true' || process.env.S3_ENABLED === 'true')) {
       const files=await owner.query("SELECT contenedor,ruta_relativa,version_objeto FROM vet.archivo WHERE organizacion_id=$1 AND proveedor='minio' AND ruta_relativa LIKE $2",[org,`${org}/%`]).catch(()=>[]);
       const {S3Client,DeleteObjectCommand}=require('@aws-sdk/client-s3');
       const cleanup=new S3Client({endpoint:process.env.S3_ENDPOINT,region:process.env.S3_REGION||'us-east-1',forcePathStyle:true,credentials:{accessKeyId:process.env.MINIO_ROOT_USER,secretAccessKey:process.env.MINIO_ROOT_PASSWORD}});

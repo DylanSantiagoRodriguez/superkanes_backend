@@ -118,3 +118,71 @@ describe('Documento clínico', () => {
     ).toThrow();
   });
 });
+
+describe('Formato pegado desde navegador', () => {
+  it('normaliza RGB, estilos vacíos y unidades CSS sin cambiar el texto', () => {
+    const value = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          attrs: { lineHeight: '' },
+          content: [
+            {
+              type: 'text',
+              text: 'Texto pegado',
+              marks: [
+                {
+                  type: 'textStyle',
+                  attrs: {
+                    color: 'rgb(36, 91, 166)',
+                    backgroundColor: '',
+                    fontFamily: '"Times New Roman"',
+                    fontSize: '16px',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const result = validateClinicalDocument(value) as typeof value;
+    expect(result.content[0].content[0].marks[0].attrs).toEqual({
+      color: '#245ba6',
+      backgroundColor: null,
+      fontFamily: 'Times New Roman',
+      fontSize: '12pt',
+    });
+    expect(result.content[0].content[0].text).toBe('Texto pegado');
+    expect(value.content[0].content[0].marks[0].attrs.color).toBe(
+      'rgb(36, 91, 166)',
+    );
+  });
+  it('mantiene el rechazo de colores fuera de rango y CSS activo', () => {
+    for (const color of [
+      'rgb(999,0,0)',
+      'rgb(1,2,3);background:url(x)',
+      'url(javascript:x)',
+      'rgba(1,2,3,0.5)',
+    ]) {
+      expect(() =>
+        validateClinicalDocument({
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                {
+                  type: 'text',
+                  text: 'No',
+                  marks: [{ type: 'textStyle', attrs: { color } }],
+                },
+              ],
+            },
+          ],
+        }),
+      ).toThrow();
+    }
+  });
+});
