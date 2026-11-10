@@ -37,6 +37,10 @@ export class DatabaseErrorFilter implements ExceptionFilter {
       .switchToHttp()
       .getResponse<Response>()
       .status(status)
-      .json({ statusCode: status, message });
+      .json({
+        statusCode: status,
+        message,
+        ...(code === '23P01' ? { code: 'APPOINTMENT_OVERLAP' } : {}),
+      });
   }
 }

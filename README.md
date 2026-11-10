@@ -2,12 +2,14 @@
 
 NestJS 11, TypeScript, Node.js 24 y PostgreSQL. Ver [guía de arranque](../README.md).
 
-## Estructura inicial
+## Estructura
 
 ```text
 src/
   config/       Validación de variables de entorno
   auth/         Contraseñas Argon2id, JWT, sesiones y guard global
+  clinical/     Ficha, consulta, agenda, consentimiento y circuito de laboratorio
+  storage/      Fotos, adjuntos privados y emisión de PDF clínicos
   resources/    Contratos, permisos, reglas de negocio, CRUD y OpenAPI
   modules/      47 módulos explícitos: entidad, controlador, servicio y DTO
   common/       Validadores y DTO de consultas compartidos
@@ -69,7 +71,7 @@ TypeORM establece conexión durante el arranque; una BD inaccesible puede impedi
 
 ## Extensión del backend
 
-Los contratos comunes cubren identidad, tutores, mascotas, historia, vacunas, agenda y peluquería. Los procesos adicionales de carga de archivos, generación de reportes y envío de comunicaciones deben implementarse como casos de uso con autorización explícita. La tabla disponible no implica que su proceso completo esté implementado.
+Los contratos comunes cubren identidad, tutores, mascotas, historia, vacunas, agenda y peluquería. La carga de archivos clínicos y la emisión de PDF tienen casos de uso específicos con autorización explícita. El envío de comunicaciones todavía requiere integrar un proveedor. La tabla disponible no implica que su proceso completo esté implementado.
 
 `test:crud` verifica JWT firmado, HTTP y PostgreSQL reales en una base temporal: 47 listados, altas de los 44 tipos permitidos, GET/PATCH, bajas, aislamiento, versiones y reglas clínicas. El contenedor se ejecuta como usuario `node`; la API no recibe las credenciales del propietario de PostgreSQL.
 
@@ -139,10 +141,9 @@ npm run build
 npm run lint
 npm test -- --runInBand
 # Ajustar POSTGRES_PORT al puerto de la base local; Compose usa 5433 por defecto.
-# Cada suite HTTP crea y elimina una BD temporal.
+# test:crud y test:auth crean y eliminan una BD temporal.
 POSTGRES_PORT=5433 TEST_STORAGE=true npm run test:crud
 POSTGRES_PORT=5433 npm run test:auth
-POSTGRES_PORT=5433 npm run test:integration
 ```
 
 La suite de fotos usa MinIO real y elimina solo sus propios objetos al terminar. Para verificar además la UI con Chromium: en el frontend ejecutar `npx playwright install chromium` y `npm run dev -- --port 5174`; luego ejecutar en backend `POSTGRES_PORT=5433 TEST_STORAGE=true TEST_BROWSER=true npm run test:crud`. La sesión de prueba se inyecta en el navegador, mientras las lecturas/escrituras de pacientes y documentos usan la API y la base temporal reales. El login tiene su propia suite de autenticación.
@@ -154,3 +155,79 @@ La suite de fotos usa MinIO real y elimina solo sus propios objetos al terminar.
 El profesional se obtiene de la sesión mediante `GET /resources/atencion_clinica/autor`: no se ofrecen autores ajenos a la cuenta. Si no hay perfil vinculado, se muestra una indicación para solicitarlo al administrador. El servidor sigue verificando autoría. El nuevo endpoint `POST /resources/atencion_clinica/con-historia` añade `motivo_consulta` y `documento` al contrato de alta de atención; el CRUD anterior permanece compatible.
 
 En **Ver detalle** de una atención, **Leer historia** y **Editar historia** permiten acceder a sus revisiones. Las revisiones cerradas solo admiten lectura; las correcciones siguen creando una nueva revisión. Si una atención existente todavía no tiene historia, **Escribir historia clínica** abre el formulario con la atención y número inicial preseleccionados.
+
+## Consulta veterinaria integrada
+
+Desde **Mascotas → Ver detalle → Abrir ficha clínica** se consultan antecedentes y se inicia una atención con paciente precargado. La consulta reúne notas SOAP, examen físico, mediciones con unidades controladas, diagnósticos, prescripciones, documentos, consentimientos y laboratorio. El profesional se toma de la sesión. El guardado de notas y detalles es transaccional; el cierre conserva un original inmutable. Una corrección copia los registros autorizados a una revisión vinculada y exige motivo.
+
+La especificación y matriz funcional canónicas están en [002-flujo-clinico](../document-management/specs/002-flujo-clinico/spec.md). La aplicación conserva el monolito y las entidades clínicas existentes. Las órdenes, resultados y eventos de laboratorio son un caso de uso específico, fuera del CRUD genérico.
+
+### Contratos incorporados
+
+Todos los caminos siguientes llevan el prefijo `/api/v1`, JWT y `X-Organization-Id`.
+
+| Camino | Operación |
+|---|---|
+| `GET /resources/clinica/pacientes/:id` | Cabecera y resumen con permisos por fuente |
+| `GET /resources/clinica/pacientes/:id/registros/:section` | Historial y secciones paginadas, con búsqueda y fechas |
+| `GET /resources/clinica/revisiones/:id` | Notas y detalles autorizados de una revisión |
+| `POST /resources/clinica/revisiones/:id/guardar` | Notas y operaciones de detalle atómicas; cierre explícito |
+| `POST /resources/clinica/revisiones/:id/corregir` | Corrección vinculada con copia de detalles y motivo |
+| `POST /resources/clinica/consentimientos/:id/responder` | Aceptación o rechazo con tutor autorizado y evidencia |
+| `GET /resources/clinica/agenda` | Citas en un intervalo máximo de 31 días |
+| `PATCH /resources/clinica/citas/:id/llegada` | Llegada con fecha del servidor |
+| `GET /resources/clinica/laboratorio/permisos` | Capacidades de laboratorio de la sesión |
+| `GET /resources/clinica/laboratorio/atenciones/:id/ordenes` | Órdenes con resultados y trazabilidad |
+| `POST /resources/clinica/laboratorio/ordenes` | Solicitud de exámenes |
+| `POST /resources/clinica/laboratorio/ordenes/:id/avanzar` | Muestra, proceso, resultado, interpretación, comunicación o cancelación |
+| `POST /storage/clinical/revisiones/:id/adjuntos` | PDF o imagen original de hasta 10 MiB |
+| `POST /storage/clinical/revisiones/:id/reportes/:type` | PDF de historia de consulta, receta o indicaciones desde revisión cerrada |
+| `GET /storage/clinical/:id/content` | Descarga privada con validación de hash y alcance clínico |
+
+Las escrituras coordinadas usan `Idempotency-Key`; las modificaciones de revisión, consentimiento, llegada u orden comprueban `If-Match`. El servidor vuelve a verificar los permisos de cada detalle involucrado. La lectura de mascota no concede automáticamente acceso a su historia.
+
+PDF e imágenes se validan mediante parser/decodificación; esto no equivale a un antivirus. Las imágenes diagnósticas conservan los bytes originales. Los PDF emitidos conservan snapshot, fuentes versionadas, hash y archivo privado. `pdf-lib` y `@pdf-lib/fontkit` permiten generar PDF con Noto Sans, cuya licencia OFL se conserva en `assets/fonts`. No se calculan dosis ni se generan interpretaciones clínicas.
+
+### Migraciones de esta entrega
+
+Se añaden cinco migraciones, sin editar las históricas:
+
+| Migración | Cambio |
+|---|---|
+| `1794316000000-clinical-exam` | Examen físico narrativo |
+| `1794317000000-clinical-detail-version` | Cambios de detalles incrementan la versión de su revisión |
+| `1794318000000-clinical-consent` | Consentimiento clínico y rechazo documentado, conservando peluquería |
+| `1794319000000-appointment-scheduling` | Llegada y exclusión de reservas solapadas por responsable |
+| `1794320000000-laboratory-workflow` | Órdenes, resultados inmutables, eventos, permisos, RLS e historial |
+
+La migración de agenda requiere `btree_gist`. Si existen reservas activas solapadas, falla sin borrar citas; resolver cada conflicto con el personal responsable antes de reintentar. Los intervalos son `[inicio,fin)`: dos citas adyacentes son válidas. Las citas sin responsable no reservan a un profesional.
+
+Ejecutar las migraciones con el trabajo de migración existente, antes de iniciar la nueva API; no usar `synchronize`. La API conserva su rol limitado. Respaldar PostgreSQL y objetos MinIO de forma coherente. La reversión destructiva está bloqueada: ante una incidencia, usar una migración correctiva o restaurar un respaldo coherente. Los permisos nuevos `orden_laboratorio.read/create/update` requieren asignación explícita a los roles ordinarios y respetan el alcance de sede.
+
+Esta entrega se verificó en bases efímeras; las migraciones no se aplicaron a la base de trabajo existente y no se realizó un despliegue.
+
+### Pruebas del flujo clínico
+
+Con Node.js 24, PostgreSQL local y MinIO configurado:
+
+```sh
+npm run build
+npm run lint
+npm test -- --runInBand
+npm run test:e2e -- --runInBand
+npm run test:auth
+# Vite debe estar escuchando en localhost:5174 y Chromium instalado.
+TEST_STORAGE=true TEST_BROWSER=true TEST_FRONTEND_URL=http://localhost:5174 npm run test:crud
+```
+
+La suite comprueba transacciones, permisos y sedes, organizaciones ajenas, cursores, conflictos de versión, rechazo de cambios en historias cerradas, correcciones, evidencia de consentimiento, reservas simultáneas, laboratorio y PDF reales. Chromium verifica el flujo integrado, renovación de sesión mientras se escribe, reintento tras perder la respuesta de un guardado confirmado, protección de formularios y presentación móvil. Las cuentas y registros son sintéticos; los fixtures eliminan su base y sus objetos al finalizar. `test:integration` es una suite diferente que utiliza la base configurada con transacciones revertidas; no ejecutarla sobre una base productiva.
+
+### Límites actuales
+
+- Diagnósticos y tratamientos históricos se muestran con su fecha; falta un ciclo explícito de problemas activos/resueltos y de suspensión de tratamientos. No se deduce actividad del registro más reciente.
+- Se generan documentos de una consulta; quedan pendientes la exportación longitudinal completa y formatos específicos de certificados.
+- Guardado explícito, sin recuperación offline ni autoguardado. Los cambios sin guardar permanecen en memoria mientras la sesión sigue vigente.
+- La agenda evita solapes, pero no gestiona turnos laborales, vacaciones o recurrencias. Los recordatorios se programan; no hay envío externo conectado.
+- Consentimiento documental con evidencia escaneada; no se presenta como firma electrónica certificada ni se afirma validación legal del formato.
+- Hospitalización, anestesia, administración/dispensación de medicamentos, inventario y caja no tienen un circuito especializado en esta entrega.
+- La auditoría de dependencias de producción del backend mantiene tres avisos moderados transitivos; cero altos o críticos en la comprobación de esta entrega. No se forzaron cambios incompatibles de TypeORM.

@@ -248,9 +248,19 @@ export class LaboratoryService {
       .update(JSON.stringify({ id, version, input }))
       .digest('hex');
     return this.access.run(identity, org, async (manager, a) => {
+      const params: unknown[] = [org, id];
+      const scope = this.scope(a, 'update', 'r', params);
+      const read = this.access.scopeSql(
+        resource('atencion_clinica'),
+        'r',
+        this.access.authorize(a, resource('atencion_clinica'), 'read'),
+        params,
+      );
       const orders: Row[] = await manager.query(
-        'SELECT * FROM vet.orden_laboratorio WHERE organizacion_id=$1 AND id=$2 FOR UPDATE',
-        [org, id],
+        `SELECT o.* FROM vet.orden_laboratorio o
+         JOIN vet.atencion_clinica r ON r.organizacion_id=o.organizacion_id AND r.id=o.atencion_id
+         WHERE o.organizacion_id=$1 AND o.id=$2 AND ${scope} AND ${read} FOR UPDATE OF o`,
+        params,
       );
       if (!orders[0]) throw new NotFoundException('Orden no disponible');
       const order = orders[0];

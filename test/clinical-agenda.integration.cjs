@@ -1,9 +1,15 @@
 const assert=require('node:assert/strict');
-module.exports=async function agenda({request,owner,org,otherOrg,ids,staffToken}){
+module.exports=async function agenda({base,adminToken,request,owner,org,otherOrg,ids,staffToken}){
   const body={mascota_id:ids.mascota,sede_id:ids.sede,tutor_contacto_id:ids.tutor,tipo:'clinica',inicio:'2028-02-03T10:00:00-05:00',fin:'2028-02-03T10:30:00-05:00',responsable_id:ids.rootMembership};
   const appointment=(await request('POST','/cita',body,201)).data;
   await request('POST','/cita',{...body,inicio:'2028-02-03T10:15:00-05:00',fin:'2028-02-03T11:00:00-05:00'},409);
   await request('POST','/cita',{...body,inicio:body.fin,fin:'2028-02-03T11:00:00-05:00'},201);
+  const reservations=await Promise.all([1,2].map(()=>fetch(base+'/api/v1/resources/cita',{
+    method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${adminToken}`,'X-Organization-Id':org,'Idempotency-Key':require('node:crypto').randomUUID()},
+    body:JSON.stringify({...body,inicio:'2028-02-04T10:00:00-05:00',fin:'2028-02-04T10:30:00-05:00'})
+  })));
+  assert.deepEqual(reservations.map(r=>r.status).sort(),[201,409]);
+  assert.equal((await reservations.find(r=>r.status===409).json()).code,'APPOINTMENT_OVERLAP');
   const path='/clinica/agenda?from=2028-02-03T00:00:00-05:00&to=2028-02-03T23:59:59-05:00';
   const list=await request('GET',path);assert.ok(list.data.some(row=>row.id===appointment.id&&row.nombre_paciente==='Luna'));
   assert.equal((await request('GET',path,undefined,200,{'X-Organization-Id':otherOrg})).data.length,0);

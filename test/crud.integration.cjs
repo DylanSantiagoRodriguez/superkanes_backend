@@ -172,10 +172,10 @@ async function main() {
     await require('./patient-chart.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
     await require('./clinical-workflow.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
     await require('./clinical-consent.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
-    await require('./clinical-agenda.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
+    await require('./clinical-agenda.integration.cjs')({base,adminToken,request,owner,org,otherOrg,ids,staffToken});
     await require('./clinical-laboratory.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
     if (process.env.TEST_STORAGE === 'true') await require('./clinical-documents.integration.cjs')({base,request,owner,org,otherOrg,ids,adminToken,staffToken});
-    if (process.env.TEST_BROWSER === 'true') await require('../../superkanes_frontend/test/patient-chart-browser.cjs')({base,adminToken,user});
+    if (process.env.TEST_BROWSER === 'true') await require('../../superkanes_frontend/test/patient-chart-browser.cjs')({base,adminToken,renewedToken:await token(),user});
     await patch('tutor', { nombres: 'Ana Maria' });
     await request('PATCH', `/tutor/${ids.tutor}`, { nombres: 'Anterior' }, 412, { 'If-Match': '"1"' });
     await request('PATCH', `/tutor/${ids.tutor}`, { nombres: null }, 400, { 'If-Match': '"3"' });
