@@ -65,3 +65,19 @@ https://caddyserver.com/docs/automatic-https
 Si se utiliza un hostname basado en IP (sslip.io), cambiar APP_DOMAIN y recrear
 backend/Caddy cuando cambie la IP pública. Un dominio propio con IP elástica evita
 que la dirección cambie al detener e iniciar la instancia.
+
+DOMINIO PROPIO Y TRANSICIÓN
+Para incorporar un dominio sin interrumpir la dirección anterior, conservar
+APP_DOMAIN y añadir los nombres nuevos a APP_DOMAIN_ALIASES separados por espacios.
+APP_CORS_ORIGINS debe incluir explícitamente todos los orígenes HTTPS permitidos,
+separados por comas. Sin esas variables se conserva el comportamiento de un dominio.
+Ejemplo de alias: superkanes.lat www.superkanes.lat.
+En el proveedor DNS, configurar el registro A del dominio raíz a la IP pública
+actual del EC2 y www como CNAME del dominio raíz. Sustituir solo los registros
+web incompatibles de esos nombres; conservar registros de correo y verificaciones.
+Todos los nombres deben resolver al servidor para que Caddy emita sus certificados.
+Validar Compose y Caddy antes de activar; recrear backend y Caddy tras cambiar sus
+variables, y recargar nginx del frontend si cambia la IP interna del backend.
+Conservar copias privadas de la configuración anterior para revertir si es necesario.
+Verificar la URL previa durante la transición y cada URL nueva tras propagar DNS.
+La instancia actual no tiene IP elástica: si cambia su IP pública, actualizar el A.

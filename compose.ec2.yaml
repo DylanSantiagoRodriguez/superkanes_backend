@@ -80,7 +80,7 @@ services:
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:?required}
       AUTH_ISSUER: superkanes-api
       AUTH_AUDIENCE: superkanes-clients
-      CORS_ORIGINS: https://${APP_DOMAIN:?required}
+      CORS_ORIGINS: ${APP_CORS_ORIGINS:-https://${APP_DOMAIN:?required}}
       SWAGGER_ENABLED: 'false'
       S3_ENABLED: 'true'
       S3_ENDPOINT: http://minio:9000
@@ -113,6 +113,7 @@ services:
     image: caddy:2-alpine
     environment:
       APP_DOMAIN: ${APP_DOMAIN}
+      APP_DOMAIN_ALIASES: ${APP_DOMAIN_ALIASES:-}
     ports: ['80:80', '443:443', '443:443/udp']
     volumes:
       - ./deploy/ec2/Caddyfile:/etc/caddy/Caddyfile:ro

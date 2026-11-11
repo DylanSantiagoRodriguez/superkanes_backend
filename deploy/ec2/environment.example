@@ -1,4 +1,8 @@
 APP_DOMAIN=superkanes.example.com
+# Optional additional HTTPS hosts, separated by spaces.
+APP_DOMAIN_ALIASES=
+# Optional explicit comma-separated origins; defaults to https://APP_DOMAIN.
+APP_CORS_ORIGINS=
 BACKEND_IMAGE=superkanes-backend:ec2-8e2dbae
 FRONTEND_IMAGE=superkanes-frontend:ec2-1cf2d9e
 POSTGRES_PASSWORD=REPLACE_RANDOM_OWNER_PASSWORD
