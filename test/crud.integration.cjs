@@ -173,6 +173,7 @@ async function main() {
     await require('./clinical-workflow.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
     await require('./clinical-consent.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
     await require('./clinical-agenda.integration.cjs')({base,adminToken,request,owner,org,otherOrg,ids,staffToken});
+    await require('./calendar.integration.cjs')({request,owner,org,otherOrg,ids,staffToken,base,adminToken,user});
     await require('./clinical-laboratory.integration.cjs')({request,owner,org,otherOrg,ids,staffToken});
     if (process.env.TEST_STORAGE === 'true') await require('./clinical-document-archive.integration.cjs')({base,request,owner,org,otherOrg,ids,adminToken,staffToken,app});
     if (process.env.TEST_STORAGE === 'true') await require('./clinical-documents.integration.cjs')({base,request,owner,org,otherOrg,ids,adminToken,staffToken});

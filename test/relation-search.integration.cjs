@@ -11,7 +11,8 @@ module.exports = async function relationSearch({request,owner,org,otherOrg,ids,s
   assert.equal(second.data.length,3);assert.equal(new Set([...first.data,...second.data].map(r=>r.id)).size,28);
   const outside=second.data[0];
   const found=await request('GET',`/mascota?search=${encodeURIComponent(outside.codigo.toLowerCase())}`);
-  assert.equal(found.data[0].id,outside.id);
+  // SEARCH-1 also matches SEARCH-10: text search does not promise an exact match first.
+  assert.ok(found.data.some(row=>row.id===outside.id), 'El registro debe estar entre las coincidencias');
   const filtered=await request('GET',`/mascota?search=Busqueda&filter=${encodeURIComponent(JSON.stringify({id:outside.id}))}`);
   assert.deepEqual(filtered.data.map(r=>r.id),[outside.id]);
   const literal=await request('POST','/mascota',{codigo:'LITERAL%_X',nombre:'Texto literal',microchip:'CHIP-987654321',especie_id:ids.especie,tutor_principal_id:ids.tutor},201);

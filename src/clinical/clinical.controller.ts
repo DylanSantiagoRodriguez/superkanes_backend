@@ -1,3 +1,5 @@
+import { CalendarService } from './calendar.service';
+import { CalendarQueryDto } from './calendar-query.dto';
 import { Body, Post, Patch } from '@nestjs/common';
 import { ResourcePersistenceService } from '../resources/resource-persistence.service';
 import {
@@ -24,6 +26,7 @@ import { ClinicalQueryDto } from './clinical-query.dto';
 export class ClinicalController {
   constructor(
     private readonly service: ClinicalService,
+    private readonly calendar: CalendarService,
     private readonly persistence: ResourcePersistenceService,
   ) {}
   @Get('pacientes/:id')
@@ -128,6 +131,14 @@ export class ClinicalController {
       uuid(key),
       version,
     );
+  }
+  @Get('calendario')
+  calendarEvents(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+    @Query() query: CalendarQueryDto,
+  ) {
+    return this.calendar.list(req.identity, uuid(org), query);
   }
   @Get('agenda')
   agenda(
