@@ -179,6 +179,11 @@ async function main() {
     if (process.env.TEST_BROWSER === 'true') await require('../../superkanes_frontend/test/patient-chart-browser.cjs')({base,adminToken,renewedToken:await token(),user});
     await require('./patient-profiles.integration.cjs')({request,owner,org,otherOrg,ids,staffToken,base,adminToken,user});
     await require('./relation-search.integration.cjs')({request,owner,org,otherOrg,ids,staffToken,base,adminToken,user});
+    if (process.env.TEST_BROWSER === 'true') {
+      const catalogUser=(await request('POST','/usuario',{proveedor_identidad:'integration',identificador_externo:randomUUID(),nombre:'Miembro para catálogos',email:'catalogs@example.test'},201)).data;
+      const catalogMember=(await request('POST','/membresia',{usuario_id:catalogUser.id},201)).data;
+      await require('../../superkanes_frontend/test/catalogs-browser.cjs')({base,adminToken,staffToken,user,memberId:catalogMember.id});
+    }
     await patch('tutor', { nombres: 'Ana Maria' });
     await request('PATCH', `/tutor/${ids.tutor}`, { nombres: 'Anterior' }, 412, { 'If-Match': '"1"' });
     await request('PATCH', `/tutor/${ids.tutor}`, { nombres: null }, 400, { 'If-Match': '"3"' });
