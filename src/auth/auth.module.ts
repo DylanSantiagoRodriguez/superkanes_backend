@@ -1,3 +1,5 @@
+import { UserManagementController } from './user-management.controller';
+import { UserManagementService } from './user-management.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CredentialEntity } from './entities/credential.entity';
 import { SessionEntity } from './entities/session.entity';
@@ -24,10 +26,11 @@ import { PasswordService } from './password.service';
       SecurityEventEntity,
     ]),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, UserManagementController],
   providers: [
     TokenService,
     AuthService,
+    UserManagementService,
     PasswordService,
     { provide: APP_GUARD, useClass: AuthGuard },
   ],

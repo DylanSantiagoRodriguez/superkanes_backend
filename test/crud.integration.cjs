@@ -185,6 +185,7 @@ async function main() {
       const catalogMember=(await request('POST','/membresia',{usuario_id:catalogUser.id},201)).data;
       await require('../../superkanes_frontend/test/catalogs-browser.cjs')({base,adminToken,staffToken,user,memberId:catalogMember.id});
     }
+    await require('./user-management.integration.cjs')({base,owner,adminToken,staffToken,user,org});
     await patch('tutor', { nombres: 'Ana Maria' });
     await request('PATCH', `/tutor/${ids.tutor}`, { nombres: 'Anterior' }, 412, { 'If-Match': '"1"' });
     await request('PATCH', `/tutor/${ids.tutor}`, { nombres: null }, 400, { 'If-Match': '"3"' });

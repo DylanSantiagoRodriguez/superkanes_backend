@@ -59,6 +59,23 @@ Swagger: `/api/docs` cuando `SWAGGER_ENABLED=true`. Incluye autenticación local
 
 `GET /api/v1/resources` devuelve el catálogo autorizado para la organización: permisos efectivos de creación, edición y baja; campos obligatorios y gestionados por el servidor; referencias; valores por defecto; transiciones y efecto de la baja. Incluye `tutor_principal_id` como entrada obligatoria del alta de mascotas. El frontend consume este contrato; la API vuelve a comprobar permisos y reglas en cada petición. Las pruebas CRUD contrastan sus campos obligatorios con los DTO publicados en OpenAPI.
 
+## Usuarios con acceso a varias organizaciones
+
+El operador de plataforma dispone de **Usuarios y accesos** (también en **Configuración → Usuarios**). Puede crear una cuenta con nombre, correo y contraseña inicial, o buscar una cuenta existente por nombre/correo. Selecciona una o varias organizaciones activas y un rol para cada una. Los vínculos abarcan todas las sedes de la organización. La cuenta conserva su contraseña y sus roles anteriores; al vincular la propia cuenta se actualiza el selector de organizaciones sin cerrar sesión.
+
+Si una organización todavía no tiene roles, puede crearse su primer **Administrador de organización** en la misma operación. Este rol administra sus recursos sin conceder privilegios de operador de plataforma. Las membresías inactivas requieren reactivación explícita desde Configuración; las cuentas inactivas o sin credenciales locales no se habilitan automáticamente.
+
+Endpoints exclusivos del operador, con JWT:
+
+- `GET /api/v1/auth/admin/users?search=...&after=...`: búsqueda por nombre/correo, páginas de 25 y cursor `page.next`.
+- `GET /api/v1/auth/admin/organizations?usuario_id=...&after=...`: organizaciones activas, roles disponibles y vínculos del usuario, incluso sin membresía del operador en la organización destino.
+- `POST /api/v1/auth/admin/users`: `{nombre,email,password,organizaciones:[{organizacion_id,rol_id}]}`.
+- `POST /api/v1/auth/admin/users/:id/organizations`: `{organizaciones:[{organizacion_id,rol_id}]}`.
+
+En una organización sin roles, sustituye `rol_id` por `crear_rol_administrador:true`. Ambos POST requieren `Idempotency-Key` UUID y admiten hasta 20 organizaciones distintas. La creación de cuenta, credencial, membresías y roles ocurre en una transacción: un vínculo inválido revierte toda la operación. Los reintentos no duplican cuentas ni asignaciones. Los roles se verifican dentro de su organización y las escrituras conservan la auditoría. No requiere migraciones nuevas.
+
+`test/user-management.integration.cjs`, ejecutado por `test:crud`, cubre creación, vinculación, aislamiento, rollback, contraseña, permisos, concurrencia, paginación e idempotencia. Con `TEST_BROWSER=true` añade comprobaciones del flujo y presentación móvil desde Chromium. Solo usa la base temporal de pruebas.
+
 ## Acceso a datos por organización
 
 `DatabaseService.withTenant()` recibe un contexto previamente autenticado y autorizado. Utiliza `DataSource.transaction()` y establece organización, usuario y petición con `set_config(..., true)`. TypeORM administra COMMIT, ROLLBACK y la conexión. Dentro del callback se debe usar exclusivamente el `EntityManager` recibido y sus repositorios, nunca un repositorio global fuera de esa transacción.
