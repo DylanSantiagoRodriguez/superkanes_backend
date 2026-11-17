@@ -32,9 +32,9 @@ de privilegio y acceso efectivo a recurso. Build/lint de ambos, unitarias/e2e y 
 para sidebar, tema, móvil, organización y conservación de datos del formulario.
 
 ## Ajuste visual solicitado
-R5: en modo claro, la sidebar expandida o contraída usa el turquesa #00b4d8.
-Texto, iconos y sesión deben mantener contraste legible; selección y hover siguen
-distinguiéndose. El modo oscuro y las superficies del contenido conservan sus colores.
+R5 (revisado por el usuario): restaurar el fondo claro anterior de la sidebar
+(#f2f6fd) y sus colores de texto originales. Mantener R1–R4: admin global,
+sidebar contraíble, botón de tema y modo oscuro. Desplegar solo esta reversión visual.
 Sin cambios de contratos, permisos ni datos.
 
 Despliegue autorizado por el usuario: publicar R1–R5 sobre las versiones productivas,

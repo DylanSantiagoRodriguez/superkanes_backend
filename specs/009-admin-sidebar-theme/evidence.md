@@ -52,3 +52,15 @@ Rollback: restaurar únicamente BACKEND_IMAGE=superkanes-backend:ec2-users-8718c
 y FRONTEND_IMAGE=superkanes-frontend:ec2-theme-8470ebf en .env.production; ejecutar
 `sudo docker compose --env-file .env.production -f compose.ec2.yaml up -d --no-deps --no-build --wait backend frontend`
 desde /opt/superkanes. Las imágenes anteriores siguen disponibles; no hay datos que revertir.
+
+## Reversión visual solicitada y desplegada
+El usuario confirmó revertir únicamente el fondo turquesa de la sidebar.
+R5 actualizado antes del cambio: fondo claro original, manteniendo R1–R4.
+Frontend feature 1ab3c21 y release 98c99d5 revierten únicamente los 11 renglones CSS.
+Imagen desplegada `superkanes-frontend:ec2-sidebar-98c99d5` (ae245e512f9a).
+Backend permanece en ec2-admin-d40d53e; no se recreó ni se modificaron datos.
+Build/lint Node24, suite theme-browser contra build release y smoke real HTTPS
+correctos: ambos health200, login, tema/persistencia, móvil, CSS index-DrhMFNE8.css
+sin override turquesa de sidebar, sin errores JS. No se usó una cuenta productiva.
+Respaldo remoto: .env.production.before-sidebar-revert-009. Imagen turquesa anterior
+retenida: ec2-sidebar-9366bee. Solo se cambió FRONTEND_IMAGE y se recreó frontend.
