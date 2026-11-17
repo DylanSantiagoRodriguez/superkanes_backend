@@ -35,8 +35,8 @@ export class CitaEntity {
   @Column({ type: 'timestamptz', nullable: false })
   inicio!: Date;
 
-  @Column({ type: 'timestamptz', nullable: false })
-  fin!: Date;
+  @Column({ type: 'timestamptz', nullable: true })
+  fin!: Date | null;
 
   @Column({ type: 'timestamptz', nullable: true })
   llegada_en!: Date | null;

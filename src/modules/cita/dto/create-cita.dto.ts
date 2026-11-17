@@ -79,19 +79,20 @@ export class CreateCitaDto {
   inicio!: string;
 
   @ApiProperty({
-    required: true,
-    nullable: false,
+    required: false,
+    nullable: true,
     type: 'string',
     format: 'date-time',
   })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
   @DatabaseValue({
     name: 'fin',
     type: 'timestamptz',
-    nullable: false,
+    nullable: true,
     default: null,
     enum: [],
   })
-  fin!: string;
+  fin?: string | null;
 
   @ApiProperty({
     required: false,

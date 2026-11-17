@@ -3282,7 +3282,7 @@
       {
         "name": "fin",
         "type": "timestamptz",
-        "nullable": false,
+        "nullable": true,
         "default": null,
         "enum": []
       },
@@ -5357,7 +5357,7 @@
       {
         "name": "responsable_id",
         "type": "uuid",
-        "nullable": false,
+        "nullable": true,
         "default": null,
         "enum": []
       },
@@ -5371,7 +5371,7 @@
       {
         "name": "telefono_contacto_servicio",
         "type": "text",
-        "nullable": false,
+        "nullable": true,
         "default": null,
         "enum": []
       },

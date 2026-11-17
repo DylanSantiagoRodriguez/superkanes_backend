@@ -275,3 +275,27 @@ y paginación. Limpiar restaura el listado; abrir y descargar mantienen su contr
 El GET documental admite `codigo` opcional; no hay migraciones ni dependencias nuevas.
 Desplegar backend antes de frontend. [Especificación](specs/007-busqueda-documentos/spec.md)
 y [flujo Codex/SDD](docs/sdd/README.md).
+
+### Agenda de baño/peluquería y recepción (010)
+
+La reserva se crea como cita de tipo `peluqueria`, con inicio y sin duración inventada
+(`fin: null`). Clínica y vacunación conservan fin obligatorio. Los selectores
+mascota/tutor admiten `linked_to` y filtran vínculos con `vigente_hasta IS NULL`.
+
+`POST /api/v1/resources/clinica/citas/:id/ingreso-peluqueria`, cuerpo `{}`, requiere
+`Idempotency-Key`, `If-Match`, `cita.update` y `servicio_peluqueria.create` en la sede.
+Crea recepción y actualiza llegada en una transacción, con hora del servidor. El
+consentimiento queda pendiente (no genera documento, firma ni aceptación).
+El responsable y teléfono se completan en Peluquería antes de iniciar el servicio;
+se conserva la validación de consentimiento firmado antes del inicio.
+
+Requiere migración `GroomingReservations1794900000000` antes de ejecutar esta versión.
+Ejecutarla con el procedimiento de migraciones existente y credenciales de propietario.
+No se ejecutan migraciones al iniciar la API. El rollback rechaza registros con fin,
+responsable o teléfono nulos: no inventa datos ni elimina reservas. No volver a una versión
+que asume esos campos obligatorios mientras existan registros pendientes: reconciliarlos
+explícitamente antes de revertir esquema y código.
+
+Prueba integral local (base temporal):
+`TEST_RELATION_BROWSER=true TEST_FRONTEND_URL=http://localhost:5174 npm run test:crud`.
+Incluye los navegadores de relaciones e ingreso; requiere frontend dev en ese puerto.

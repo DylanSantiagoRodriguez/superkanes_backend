@@ -1,3 +1,4 @@
+import { GroomingReservations1794900000000 } from './migrations/1794900000000-grooming-reservations';
 import { PatientWeights1794322000000 } from './migrations/1794322000000-patient-weights';
 import { ClinicalDocumentArchive1794321000000 } from './migrations/1794321000000-clinical-document-archive';
 import { LaboratoryWorkflow1794320000000 } from './migrations/1794320000000-laboratory-workflow';
@@ -53,6 +54,7 @@ export default new DataSource({
     LaboratoryWorkflow1794320000000,
     ClinicalDocumentArchive1794321000000,
     PatientWeights1794322000000,
+    GroomingReservations1794900000000,
   ],
   logging: ['error', 'migration'],
   extra: { max: 1, connectionTimeoutMillis: 10000 },

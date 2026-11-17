@@ -129,19 +129,20 @@ export class CreateServicioPeluqueriaDto {
   entregado_en?: string | null;
 
   @ApiProperty({
-    required: true,
-    nullable: false,
+    required: false,
+    nullable: true,
     type: 'string',
     format: 'uuid',
   })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
   @DatabaseValue({
     name: 'responsable_id',
     type: 'uuid',
-    nullable: false,
+    nullable: true,
     default: null,
     enum: [],
   })
-  responsable_id!: string;
+  responsable_id?: string | null;
 
   @ApiProperty({
     required: true,
@@ -158,15 +159,16 @@ export class CreateServicioPeluqueriaDto {
   })
   tutor_contacto_id!: string;
 
-  @ApiProperty({ required: true, nullable: false, type: 'string' })
+  @ApiProperty({ required: false, nullable: true, type: 'string' })
+  @ValidateIf((_object: unknown, value: unknown) => value !== undefined)
   @DatabaseValue({
     name: 'telefono_contacto_servicio',
     type: 'text',
-    nullable: false,
+    nullable: true,
     default: null,
     enum: [],
   })
-  telefono_contacto_servicio!: string;
+  telefono_contacto_servicio?: string | null;
 
   @ApiProperty({ required: false, nullable: false, type: 'boolean' })
   @ValidateIf((_object: unknown, value: unknown) => value !== undefined)

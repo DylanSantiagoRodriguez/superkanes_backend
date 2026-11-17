@@ -621,6 +621,126 @@ export class ResourcePersistenceService {
     });
   }
 
+  groomingAdmission(
+    identity: Identity,
+    org: string,
+    id: string,
+    body: unknown,
+    key: string,
+    etag: string,
+  ) {
+    if (Object.keys(object(body)).length)
+      throw new BadRequestException(
+        'El ingreso no acepta horas ni consentimientos suministrados por el cliente.',
+      );
+    const version = expectedVersion(etag);
+    const operation = 'grooming-admission';
+    const hash = createHash('sha256')
+      .update(JSON.stringify({ id, version }))
+      .digest('hex');
+    return this.access.run(identity, org, async (manager, a) => {
+      const appointmentResource = resource('cita'),
+        serviceResource = resource('servicio_peluqueria');
+      const scope = this.access.authorize(a, serviceResource, 'create');
+      await manager.query(
+        'SELECT pg_advisory_xact_lock(hashtextextended($1,0))',
+        [`${org}:${a.userId}:${key}`],
+      );
+      const appointment = await this.find(
+        manager,
+        appointmentResource,
+        id,
+        a,
+        'update',
+        true,
+      );
+      if (!scope.has(null) && !scope.has(String(appointment.sede_id)))
+        throw new ForbiddenException(
+          'Sin permiso para ingresar servicios en esta sede.',
+        );
+      const previous: {
+        resource: string;
+        request_hash: string;
+        response: Row;
+      }[] = await manager.query(
+        'SELECT resource,request_hash,response FROM api.idempotency WHERE organizacion_id=$1 AND usuario_id=$2 AND key=$3 AND expires_at>now()',
+        [org, a.userId, key],
+      );
+      if (previous[0]) {
+        if (
+          previous[0].resource !== operation ||
+          previous[0].request_hash !== hash
+        )
+          throw new ConflictException('Idempotency-Key ya utilizado');
+        await this.find(
+          manager,
+          serviceResource,
+          String(object(previous[0].response.service).id),
+          a,
+          'create',
+        );
+        return { data: previous[0].response };
+      }
+      this.checkVersion(appointment, version);
+      if (
+        appointment.tipo !== 'peluqueria' ||
+        !['programada', 'confirmada'].includes(String(appointment.estado))
+      )
+        throw new ConflictException('La cita no admite ingreso de peluquería.');
+      const existing: Row[] = await manager.query(
+        'SELECT id FROM vet.servicio_peluqueria WHERE organizacion_id=$1 AND cita_id=$2',
+        [org, id],
+      );
+      if (existing.length)
+        throw new ConflictException(
+          'La cita ya tiene un servicio de peluquería.',
+        );
+      // One server timestamp: reception is not the planned appointment time.
+      const [clock]: { received: string; day: string }[] = await manager.query(
+        "SELECT to_char(statement_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS received, to_char(statement_timestamp() AT TIME ZONE zona_horaria, 'YYYY-MM-DD') AS day FROM vet.sede WHERE organizacion_id=$1 AND id=$2",
+        [org, appointment.sede_id],
+      );
+      const values: Row = {
+        mascota_id: appointment.mascota_id,
+        tutor_contacto_id: appointment.tutor_contacto_id,
+        sede_id: appointment.sede_id,
+        cita_id: id,
+        fecha_servicio: clock.day,
+        llegada_en: clock.received,
+        requiere_consentimiento: true,
+        observaciones_ingreso: appointment.notas ?? null,
+      };
+      await this.rules.validate(manager, serviceResource, values, undefined, a);
+      const created = await this.insert(manager, serviceResource, values, a);
+      await this.rules.validate(
+        manager,
+        serviceResource,
+        { estado: 'recibido' },
+        created,
+        a,
+      );
+      const service = await this.patch(
+        manager,
+        serviceResource,
+        String(created.id),
+        { estado: 'recibido' },
+      );
+      const updated = await this.patch(manager, appointmentResource, id, {
+        llegada_en: clock.received,
+      });
+      const result = { appointment: updated, service };
+      await manager.query(
+        'DELETE FROM api.idempotency WHERE organizacion_id=$1 AND usuario_id=$2 AND key=$3 AND expires_at<=now()',
+        [org, a.userId, key],
+      );
+      await manager.query(
+        'INSERT INTO api.idempotency(organizacion_id,usuario_id,key,resource,request_hash,response) VALUES($1,$2,$3,$4,$5,$6)',
+        [org, a.userId, key, operation, hash, JSON.stringify(result)],
+      );
+      return { data: result };
+    });
+  }
+
   clinicalAuthor(identity: Identity, org: string) {
     return this.access.run(identity, org, async (manager, a) => {
       this.access.authorize(a, resource('atencion_clinica'), 'create');

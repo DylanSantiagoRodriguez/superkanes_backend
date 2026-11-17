@@ -180,6 +180,7 @@ async function main() {
     if (process.env.TEST_BROWSER === 'true') await require('../../superkanes_frontend/test/patient-chart-browser.cjs')({base,adminToken,renewedToken:await token(),user});
     await require('./patient-profiles.integration.cjs')({request,owner,org,otherOrg,ids,staffToken,base,adminToken,user});
     await require('./relation-search.integration.cjs')({request,owner,org,otherOrg,ids,staffToken,base,adminToken,user});
+    await require('./grooming-reservations.integration.cjs')({request,owner,org,otherOrg,ids,staffToken,base,adminToken,user});
     if (process.env.TEST_BROWSER === 'true') {
       const catalogUser=(await request('POST','/usuario',{proveedor_identidad:'integration',identificador_externo:randomUUID(),nombre:'Miembro para catálogos',email:'catalogs@example.test'},201)).data;
       const catalogMember=(await request('POST','/membresia',{usuario_id:catalogUser.id},201)).data;
