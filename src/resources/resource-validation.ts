@@ -156,11 +156,12 @@ export interface ListQuery {
   cursor?: string;
   filters: Row;
   search?: string;
+  linkedTo?: string;
 }
 export function listQuery(r: Resource, query: Row): ListQuery {
   if (
     Object.keys(query).some(
-      (k) => !['limit', 'after', 'filter', 'search'].includes(k),
+      (k) => !['limit', 'after', 'filter', 'search', 'linked_to'].includes(k),
     )
   )
     throw new BadRequestException('Parametro de consulta no permitido');
@@ -174,6 +175,12 @@ export function listQuery(r: Resource, query: Row): ListQuery {
     )
       throw new BadRequestException('Busqueda no valida');
     search = query.search.trim() || undefined;
+  }
+  let linkedTo: string | undefined;
+  if (query.linked_to !== undefined) {
+    if (!['mascota', 'tutor'].includes(r.name))
+      throw new BadRequestException('Relacion no permitida');
+    linkedTo = uuid(query.linked_to, 'linked_to');
   }
   const raw = query.limit ?? '25';
   if (typeof raw !== 'string' || !/^\d+$/.test(raw))
@@ -206,5 +213,5 @@ export function listQuery(r: Resource, query: Row): ListQuery {
       filters[key] = field(c, value);
     }
   }
-  return { limit, cursor, filters, search };
+  return { limit, cursor, filters, search, linkedTo };
 }

@@ -824,6 +824,26 @@ export class ResourcePersistenceService {
           where.push(`r."${key}"=$${params.length}`);
         }
       }
+      if (options.linkedTo) {
+        for (const name of [
+          'mascota_tutor',
+          r.name === 'mascota' ? 'tutor' : 'mascota',
+        ]) {
+          const related = resource(name);
+          this.access.scopeSql(
+            related,
+            'link',
+            this.access.authorize(a, related, 'read'),
+            params,
+          );
+        }
+        const own = r.name === 'mascota' ? 'mascota_id' : 'tutor_id';
+        const other = r.name === 'mascota' ? 'tutor_id' : 'mascota_id';
+        params.push(options.linkedTo);
+        where.push(
+          `EXISTS (SELECT 1 FROM vet.mascota_tutor link WHERE link.organizacion_id=r.organizacion_id AND link.${own}=r.id AND link.${other}=$${params.length}::uuid AND link.vigente_hasta IS NULL)`,
+        );
+      }
       if (options.search) {
         // Fixed column allowlist, bound values, literal wildcard characters.
         const columns = relationSearchFields[r.name];
