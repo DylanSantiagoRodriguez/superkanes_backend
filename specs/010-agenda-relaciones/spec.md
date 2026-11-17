@@ -39,3 +39,11 @@ estado recibido y con llegada_en del servidor. Responsable y teléfono pueden qu
 pendientes hasta editar en Peluquería; se exigen antes de comenzar el servicio.
 No se asignan responsables ficticios ni se inventa un teléfono. Consentimiento
 permanece sin documento ni firma. Reintentos no duplican ni cambian la hora original.
+
+## Corrección de recorridos reportados
+El formulario corto debe activarse también al elegir tipo Peluquería dentro de
+Programar cita y al crear desde el apartado Peluquería. Desde Peluquería se reserva
+con los mismos cuatro campos y luego se abre consentimiento/ingreso; si se cancela
+ese paso, la reserva permanece en Agenda y no se crea una recepción incompleta.
+Validar filtrado de tutores con mascota seleccionada en estos recorridos. El usuario
+indica expresamente NO desplegar.

@@ -33,3 +33,21 @@ No desplegado. Requiere aplicar GroomingReservations1794900000000 por el flujo
 existente de migraciones antes de ejecutar esta versión; ninguna migración se ejecutó
 sobre producción. La plantilla y el circuito de firma futuro quedan fuera del alcance
 actual, conforme a la instrucción de dejar el consentimiento vacío y pendiente.
+
+## Corrección de recorridos · sin despliegue
+Se conectó Nuevo registro/Nuevo baño del apartado Peluquería al formulario corto
+y luego al paso de consentimiento e ingreso existente. Cambiar Tipo a Peluquería
+en Programar cita también reduce el formulario sin perder mascota/tutor/sede.
+Las ediciones operativas existentes mantienen sus campos de seguimiento.
+
+Build y lint frontend correctos. La suite con TEST_RELATION_BROWSER=true repitió
+542 comprobaciones HTTP y los navegadores con API real. Nuevas aserciones reproducen
+las capturas: seleccionar mascota en Programar cita solo ofrece sus tutores; cambiar
+tipo a peluquería deja cuatro campos; Nuevo registro desde Peluquería permite guardar
+la reserva y el ingreso pendiente. Captura inspeccionada: /tmp/superkanes-grooming-four-fields.png.
+
+Se verificó solo por lectura que la web pública sigue usando index-7hH0eA29.js
+y Docker local localhost:5173 index-C23qP2uE.js, ambos anteriores al incremento.
+El usuario indicó expresamente no desplegar: no se actualizaron contenedores ni
+producción ni se ejecutaron migraciones sobre datos de trabajo. Navegadores de prueba
+en localhost:5174 se conectaron a API/base efímeras mediante el fixture.
