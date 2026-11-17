@@ -5,10 +5,10 @@ o `.specify/memory/constitution.md` desde backend, antes de cambiar código.
 El workspace coordina dos repositorios Git independientes: `superkanes_backend`
 y `superkanes_frontend`. La documentación y herramientas SDD se versionan en backend. El Git raíz solo conserva
 el baseline anterior y enlaces de compatibilidad; no necesita remoto.
-Comprobar los tres estados; nunca añadir los repositorios hijos al Git raíz.
+Comprobar ambos estados y, si existe, el Git raíz; nunca añadirle los repositorios hijos.
 
-Las skills oficiales de Spec Kit están en `.agents/skills` (enlace a
-`superkanes_backend/.agents/skills`). Ejecutar sus scripts desde
+Las skills oficiales de Spec Kit están en `.agents/skills` dentro del backend.
+El workspace puede enlazarlas desde su raíz. Ejecutar sus scripts desde
 `superkanes_backend`, donde está `.specify`; no reinicializar la aplicación.
 En Codex usar `$speckit-constitution`, `$speckit-specify`, `$speckit-clarify`,
 `$speckit-plan`, `$speckit-checklist`, `$speckit-tasks`, `$speckit-analyze`,
