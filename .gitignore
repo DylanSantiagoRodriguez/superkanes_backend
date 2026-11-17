@@ -61,13 +61,10 @@ playwright/.auth/
 *.tsbuildinfo
 
 # Planificación interna y configuración de asistentes.
-.specify/
 .codex/
 .claude/
-.agents/
 document-management/
 jira/
-spec.md
+/spec.md
 CONSTITUCION.md
-AGENTS.md
 CLAUDE.md

@@ -61,5 +61,6 @@ module.exports=async function archive({base,request,owner,org,otherOrg,ids,admin
   const correction=(await request('POST',`/clinica/revisiones/${revision.id}/corregir`,{motivo_cambio:'Aclaración documental de prueba'},201,{'If-Match':`"${closed.version}"`})).data.revision;
   assert.equal((await list(ids.mascota,correction.id)).data.length,1);
   assert.equal((await list(ids.mascota,revision.id)).data.length,2);
+  await require('./document-search.integration.cjs')({base,owner,org,otherOrg,ids,adminToken,staffToken,first,revision,raw});
   console.log('OK: documento del editor en MinIO, vínculo de paciente, hash, versiones, normalización, permisos, rollback y corrección.');
 };

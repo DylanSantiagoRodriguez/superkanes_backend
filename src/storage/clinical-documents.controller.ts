@@ -1,4 +1,5 @@
-import { IsOptional, IsUUID } from 'class-validator';
+import { IsOptional, IsUUID, IsString, Matches } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ClinicalDocumentArchiveService } from './clinical-document-archive.service';
 import {
   Controller,
@@ -29,6 +30,16 @@ import { ClinicalDocumentsService } from './clinical-documents.service';
 class DocumentArchiveQuery {
   @IsOptional() @IsUUID() after?: string;
   @IsOptional() @IsUUID() revision_id?: string;
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  @IsString()
+  @Matches(/^(?:[0-9a-f-]{3,36})?$/i, {
+    message:
+      'codigo debe contener entre 3 y 36 caracteres hexadecimales o guiones',
+  })
+  codigo?: string;
 }
 @ApiTags('documentos-clinicos')
 @ApiBearerAuth()
