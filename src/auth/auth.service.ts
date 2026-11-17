@@ -358,17 +358,21 @@ export class AuthService {
   }
   async me(identity: Identity) {
     return this.source.transaction(async (manager) => {
-      await manager.query("SELECT set_config('app.usuario_id',$1,true)", [
-        identity.subject,
-      ]);
+      await manager.query(
+        "SELECT set_config('app.usuario_id',$1,true),set_config('app.platform_admin',$2,true)",
+        [identity.subject, identity.platformAdmin ? 'true' : 'false'],
+      );
       const [user]: { id: string; nombre: string; email: string }[] =
         await manager.query(
           'SELECT id,nombre,email FROM vet.usuario WHERE id=$1',
           [identity.subject],
         );
-      // La consulta de membresías usa una función acotada a la identidad del contexto.
+      // El operador ya tiene alcance global; no necesita membresías artificiales.
+      // La identidad proviene de la sesión verificada, nunca de parámetros del cliente.
       const organizations: object[] = await manager.query(
-        'SELECT * FROM auth.my_organizations()',
+        identity.platformAdmin
+          ? "SELECT id,nombre FROM vet.organizacion WHERE estado='activa' ORDER BY nombre,id"
+          : 'SELECT * FROM auth.my_organizations()',
       );
       return { ...user, platformAdmin: identity.platformAdmin, organizations };
     });

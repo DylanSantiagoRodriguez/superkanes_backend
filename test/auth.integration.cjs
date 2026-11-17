@@ -41,7 +41,27 @@ async function main(){
   const wrong=await req('/login',{email:'admin@example.test',password:'incorrecta',client:'native'},401);
   const unknown=await req('/login',{email:'missing@example.test',password:'incorrecta',client:'native'},401);
   assert.equal(wrong.value.message,unknown.value.message);
-  const me=await req('/me',undefined,200,admin.accessToken,{},'GET');assert.equal(me.value.id,user);assert.equal(me.value.organizations[0].id,org);
+  const me=await req('/me',undefined,200,admin.accessToken,{},'GET');assert.equal(me.value.id,user);assert.ok(me.value.organizations.some(o=>o.id===org));
+  // El administrador global ve todas las organizaciones activas, sin paginación ni membresías.
+  const extraOrgs=Array.from({length:27},()=>randomUUID()), inactive=randomUUID();
+  for(const [i,id] of extraOrgs.entries()) await owner.query("INSERT INTO vet.organizacion(id,nombre) VALUES($1,$2)",[id,'Organizacion adicional '+i]);
+  await owner.query("INSERT INTO vet.organizacion(id,nombre,estado) VALUES($1,'Inactiva','inactiva')",[inactive]);
+  const all=(await req('/me',undefined,200,admin.accessToken,{},'GET')).value;
+  assert.ok(extraOrgs.every(id=>all.organizations.some(o=>o.id===id)));
+  assert.ok(!all.organizations.some(o=>o.id===inactive));
+  async function resourceAccess(token,organization,status){
+   const response=await fetch(base+'/api/v1/resources/tutor',{headers:{Authorization:'Bearer '+token,'X-Organization-Id':organization,'X-Platform-Admin':'true'}});
+   assert.equal(response.status,status);checks++;
+  }
+  await resourceAccess(admin.accessToken,extraOrgs[0],200);
+  await resourceAccess(admin.accessToken,inactive,403);
+  const [members]=await owner.query('SELECT count(*)::int AS count FROM vet.membresia WHERE usuario_id=$1',[user]);
+  assert.equal(members.count,1);
+  await owner.query('UPDATE auth.credential SET platform_admin=false WHERE usuario_id=$1',[user]);
+  const scoped=(await req('/me',undefined,200,admin.accessToken,{'X-Platform-Admin':'true'},'GET')).value;
+  assert.equal(scoped.platformAdmin,false);assert.deepEqual(scoped.organizations.map(o=>o.id),[org]);
+  await resourceAccess(admin.accessToken,extraOrgs[0],403);
+  await owner.query('UPDATE auth.credential SET platform_admin=true WHERE usuario_id=$1',[user]);
   await req('/me',undefined,401,admin.accessToken.slice(0,-8)+'invalidx',{},'GET');
   await req('/users',{nombre:'Staff',email:'staff@example.test',password,organizacion_id:org,platform_admin:true},400,admin.accessToken);
   await req('/users',{nombre:'Staff',email:'staff@example.test',password:'short',organizacion_id:org},400,admin.accessToken);
@@ -54,6 +74,15 @@ async function main(){
   assert.notEqual(credential.password_hash,hash);assert.equal(credential.platform_admin,false);
   let regular=await login('staff@example.test',password);
   await req('/users',{nombre:'No',email:'no@example.test',password,organizacion_id:org},403,regular.accessToken);
+  // Un rol de organización llamado Administrador no concede alcance global.
+  const localRole=randomUUID();
+  await owner.query("INSERT INTO vet.rol(id,organizacion_id,nombre) VALUES($1,$2,'Administrador')",[localRole,org]);
+  await owner.query('INSERT INTO vet.rol_permiso(organizacion_id,rol_id,permiso_id) SELECT $1,$2,id FROM vet.permiso',[org,localRole]);
+  await owner.query('INSERT INTO vet.asignacion_rol(organizacion_id,membresia_id,rol_id) SELECT $1,id,$2 FROM vet.membresia WHERE organizacion_id=$1 AND usuario_id=$3',[org,localRole,staff.id]);
+  await resourceAccess(regular.accessToken,org,200);
+  const regularMe=(await req('/me',undefined,200,regular.accessToken,{'X-Platform-Admin':'true'},'GET')).value;
+  assert.deepEqual(regularMe.organizations.map(o=>o.id),[org]);
+  await resourceAccess(regular.accessToken,extraOrgs[0],403);
   // Rotacion y reutilizacion: un token consumido revoca toda su sesion.
   const rotated=(await req('/refresh',{refreshToken:admin.refreshToken,client:'native'})).value;
   assert.notEqual(rotated.refreshToken,admin.refreshToken);
