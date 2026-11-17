@@ -44,4 +44,26 @@ Quedan revisión humana y despliegue; pruebas automatizadas no acreditan ninguno
 No se realizó benchmark de grandes volúmenes. Se mantiene el aviso previo de bundle.
 Los logs crudos locales están en /tmp/superkanes-sdd-*.log; este resumen versionado
 registra comandos/resultados sin publicar secretos ni información clínica real.
-La verificación de las ramas de PR aisladas se añadirá al finalizar su preparación.
+## Verificación de las ramas publicadas
+
+Ramas `review/sdd-busqueda-documentos`, creadas desde origin/main; solo contienen
+el incremento y documentación. El código probado corresponde a backend `7afe394`
+y frontend `be4f3b8`; los commits posteriores solo cierran documentación/evidencia.
+Los commits locales anteriores 8718c6e/377a1b8 permanecen fuera de estos PR.
+
+- `SDD_INTEGRATION=true TEST_FRONTEND_URL=http://localhost:5175 bash scripts/verify-sdd.sh`:
+  prerequisitos, build/lint, 26 unitarias, 4 e2e y 48 auth aprobados. Las nuevas pruebas
+  documentales y de navegador también pasaron. Una primera ejecución se interrumpió
+  al finalizar la prueba previa profiles-browser.cjs: `Route is already handled`.
+- Se limpiaron explícitamente la BD y objetos sintéticos del fixture interrumpido,
+  identificados mediante el marcador exclusivo de esta prueba; no se tocaron datos operativos.
+- Repetición `TEST_STORAGE=true TEST_BROWSER=true TEST_FRONTEND_URL=http://localhost:5175 npm run test:crud`:
+  terminó con exit 0, 526 comprobaciones HTTP generales, 25 consultas documentales y
+  todas las pruebas Chromium de esa rama aprobadas; base temporal eliminada.
+- No se modificó profiles-browser.cjs: la interrupción anterior queda registrada como
+  inestabilidad observada del harness, no como fallo reproducido de producto.
+- Diez skills Codex comprobadas contra los hashes del manifest oficial instalado.
+
+Publicación en borrador: [backend #1](https://github.com/DylanSantiagoRodriguez/superkanes_backend/pull/1)
+y [frontend #2](https://github.com/DylanSantiagoRodriguez/superkanes_frontend/pull/2).
+Sin merge, despliegue ni afirmación de aprobación humana.

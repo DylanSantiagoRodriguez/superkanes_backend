@@ -7,6 +7,6 @@
 - [x] T05 Implementar formulario, identidad visible y cancelación de resultados obsoletos.
 - [x] T06 Agregar pruebas de búsqueda, permisos, paginación y UI.
 - [x] T07 Ejecutar regresión y registrar evidencia exacta.
-- [ ] T08 Convergencia, revisión del diff y commits revisables.
-- [ ] T09 Publicar PR sin incluir cambios locales previos ajenos.
+- [x] T08 Convergencia, revisión del diff y commits revisables.
+- [x] T09 Publicar PR sin incluir cambios locales previos ajenos.
 - [ ] T10 Revisión humana y aceptación del equipo antes de merge/despliegue.

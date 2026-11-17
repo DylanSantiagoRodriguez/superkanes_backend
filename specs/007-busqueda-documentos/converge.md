@@ -9,6 +9,11 @@ El análisis no sustituye los resultados de evidence.md. El diff se revisa por s
 solo servicio/controlador de archivo, cliente/lista documental, pruebas, README y SDD.
 No se editó el inventario Jira ni se refactorizaron módulos clínicos ajenos.
 
-Publicación y revisión del equipo se rastrean en T09–T10, sin declararlas ejecutadas
-por el hecho de pasar tests. La selección del backend como destino de SDD queda
+Publicación completada en T09: PR backend #1 y frontend #2, ambos en borrador.
+La revisión del equipo sigue pendiente en T10, sin atribuir aprobación humana a los tests. La selección del backend como destino de SDD queda
 registrada en research y plan; no existen copias canónicas independientes.
+
+Resultado final: pruebas del incremento y regresión aprobadas en las ramas aisladas
+de publicación, sin incluir los commits locales anteriores. La incidencia transitoria
+del harness y su limpieza se documentan en evidence.md. Sin brechas funcionales
+pendientes detectadas; la revisión humana no se marca completada.
