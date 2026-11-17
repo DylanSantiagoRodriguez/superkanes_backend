@@ -9,6 +9,15 @@ import {
 
 export class ListQueryDto {
   @ApiPropertyOptional({
+    format: 'uuid',
+    description:
+      'Tutor vinculado para mascotas o mascota vinculada para tutores',
+  })
+  @IsOptional()
+  @IsUUID()
+  linked_to?: string;
+
+  @ApiPropertyOptional({
     description:
       'Busqueda por texto en mascotas y tutores; maximo 120 caracteres',
   })
