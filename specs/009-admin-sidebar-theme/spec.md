@@ -23,7 +23,7 @@ R4: conservar turquesa, login de vidrio, autorización, sesiones, contratos y da
 
 ## Fuera de alcance
 Dar privilegios de plataforma a usuarios existentes, acceder a organizaciones inactivas,
-crear membresías automáticas, migraciones, refactorizaciones y despliegue de producción.
+crear membresías automáticas, migraciones y refactorizaciones.
 
 ## Verificación
 Pruebas de auth HTTP con JWT y PostgreSQL efímero: admin sin membresía, organización
@@ -36,3 +36,6 @@ R5: en modo claro, la sidebar expandida o contraída usa el turquesa #00b4d8.
 Texto, iconos y sesión deben mantener contraste legible; selección y hover siguen
 distinguiéndose. El modo oscuro y las superficies del contenido conservan sus colores.
 Sin cambios de contratos, permisos ni datos.
+
+Despliegue autorizado por el usuario: publicar R1–R5 sobre las versiones productivas,
+conservar imágenes anteriores y verificar salud HTTP y UI publicada.

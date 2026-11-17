@@ -23,3 +23,32 @@ Build y lint frontend con Node 24 correctos (misma advertencia de tamaño de chu
 `node test/theme-browser.cjs` correcto: tema, sidebar, móvil, persistencia y contraste.
 Captura móvil revisada visualmente con fondo turquesa, navegación y selector legibles.
 `git diff --check` correcto en ambos repositorios. No desplegado.
+
+## Despliegue autorizado completado · 2026-11-17
+Publicado en https://superkanes.lat y https://www.superkanes.lat.
+Fuentes publicadas en rama `release/009-admin-sidebar-theme` de cada repositorio:
+backend d40d53e sobre producción 8718c6e; frontend 9366bee sobre 639b207.
+Solo se incorporó este incremento a los baselines productivos.
+
+Imágenes activas:
+- backend `superkanes-backend:ec2-admin-d40d53e`, ID 74bbda315d91.
+- frontend `superkanes-frontend:ec2-sidebar-9366bee`, ID 7dd7626e5458.
+
+Build/lint de ambas fuentes release aprobados con Node24. Backend: 26 unitarias,
+4 e2e y 56 comprobaciones de auth contra PostgreSQL efímero aprobadas. Frontend:
+Playwright sobre build release en localhost:5177 aprobado. VITE_API_URL=/api/v1.
+Artefacto SHA256: 262f391f0673f8d547ec51e94aee9aa73fe60e563a44f260bffa765390561fc5.
+
+Compose recreó exclusivamente backend/frontend con --no-deps --no-build --wait.
+Sin migraciones ni semillas. PostgreSQL, MinIO y Caddy permanecieron activos.
+Verificación real sin interceptar API: HTTPS200, readiness200 en ambos dominios,
+login visible, botón de tema y persistencia, móvil390 sin desbordamiento, CSS nuevo
+y sin errores JS. No se inició sesión con cuentas productivas; permisos y sidebar
+autenticada se verificaron antes con pruebas locales. Captura:
+/tmp/superkanes-production-009.png.
+
+Respaldo remoto privado: /opt/superkanes/.env.production.before-admin-sidebar-009.
+Rollback: restaurar únicamente BACKEND_IMAGE=superkanes-backend:ec2-users-8718c6e
+y FRONTEND_IMAGE=superkanes-frontend:ec2-theme-8470ebf en .env.production; ejecutar
+`sudo docker compose --env-file .env.production -f compose.ec2.yaml up -d --no-deps --no-build --wait backend frontend`
+desde /opt/superkanes. Las imágenes anteriores siguen disponibles; no hay datos que revertir.
