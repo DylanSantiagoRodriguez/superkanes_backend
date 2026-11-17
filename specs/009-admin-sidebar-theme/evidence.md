@@ -15,3 +15,11 @@ Validación local, 2026-11-17, Node 24.
 R1 cubierto por auth y acceso a recursos reales; R2/R3 por navegador; R4 por regresión de autenticación y contraste. No se cambian esquema ni permisos de cuentas. La UI usa fixtures sintéticos: la autorización se demuestra por separado con PostgreSQL/JWT, no por mocks.
 
 Cambios preparados en `feature/009-admin-sidebar-theme` en ambos repositorios. No se desplegaron estos cambios ni se probaron cuentas productivas. Sigue pendiente la revisión humana del incremento.
+
+## Ajuste R5 · sidebar clara turquesa
+Se limita el fondo #00b4d8 a AppShell en modo claro y se usa #062e38 para
+texto e iconos. Los tokens de superficies clínicas siguen intactos.
+Build y lint frontend con Node 24 correctos (misma advertencia de tamaño de chunk).
+`node test/theme-browser.cjs` correcto: tema, sidebar, móvil, persistencia y contraste.
+Captura móvil revisada visualmente con fondo turquesa, navegación y selector legibles.
+`git diff --check` correcto en ambos repositorios. No desplegado.

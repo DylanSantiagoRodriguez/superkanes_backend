@@ -30,3 +30,9 @@ Pruebas de auth HTTP con JWT y PostgreSQL efímero: admin sin membresía, organi
 inactiva, >25 organizaciones, usuario ordinario, rol administrador local, revocación
 de privilegio y acceso efectivo a recurso. Build/lint de ambos, unitarias/e2e y navegador
 para sidebar, tema, móvil, organización y conservación de datos del formulario.
+
+## Ajuste visual solicitado
+R5: en modo claro, la sidebar expandida o contraída usa el turquesa #00b4d8.
+Texto, iconos y sesión deben mantener contraste legible; selección y hover siguen
+distinguiéndose. El modo oscuro y las superficies del contenido conservan sus colores.
+Sin cambios de contratos, permisos ni datos.
