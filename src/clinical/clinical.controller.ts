@@ -148,6 +148,26 @@ export class ClinicalController {
   ) {
     return this.service.agenda(req.identity, uuid(org), query);
   }
+  @Post('citas/:id/ingreso-peluqueria')
+  @ApiHeader({ name: 'If-Match', required: true })
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  groomingAdmission(
+    @Req() req: AuthenticatedRequest,
+    @Headers('x-organization-id') org: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Headers('idempotency-key') key: string,
+    @Headers('if-match') version: string,
+  ) {
+    return this.persistence.groomingAdmission(
+      req.identity,
+      uuid(org),
+      uuid(id),
+      body,
+      uuid(key),
+      version,
+    );
+  }
   @Patch('citas/:id/llegada')
   @ApiHeader({ name: 'If-Match', required: true })
   arrival(

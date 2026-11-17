@@ -112,7 +112,7 @@ export class CalendarService {
         // Include appointments crossing midnight; date-only tasks keep their calendar date.
         const overlaps =
           source.table === 'cita'
-            ? `r.fin > ($3::date::timestamp AT TIME ZONE $2)`
+            ? `(r.fin > ($3::date::timestamp AT TIME ZONE $2) OR (r.fin IS NULL AND r.inicio >= ($3::date::timestamp AT TIME ZONE $2)))`
             : `${start} >= ($3::date::timestamp AT TIME ZONE $2)`;
         branches.push(
           `SELECT r.id,'${source.table}'::text AS resource,${start} AS fecha,${source.end} AS fin,${source.allDay} AS all_day,${source.pet} AS mascota_id,r.estado AS status,${source.title}::text AS title,${source.detail} AS detail FROM vet.${source.table} r WHERE r.organizacion_id=$1 AND ${scope} AND ${overlaps} AND ${start} < (($4::date + 1)::timestamp AT TIME ZONE $2)`,

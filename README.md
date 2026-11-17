@@ -265,3 +265,27 @@ Se requiere MinIO y permisos `archivo.create/read`, además de los permisos clí
 Los documentos previos a esta función se conservan en su revisión. No se reescriben historias cerradas ni se afirma que ya estén archivadas. El siguiente guardado autorizado de un borrador con documento crea su archivo si falta. Recuperación: migración correctiva o respaldo coherente de PostgreSQL y MinIO; la reversión destructiva está bloqueada.
 
 La [especificación 003](../document-management/specs/003-documentos-paciente-minio/spec.md) contiene alcance y aceptación. Verificado con 25 pruebas unitarias, 4 pruebas HTTP de aplicación, compilación/lint y suite integrada de 423 comprobaciones HTTP más Chromium/MinIO reales: pegar formato, guardar/reabrir, descargar el archivo, permisos por sede/organización, hash, versiones, correcciones y rollback ante almacenamiento indisponible.
+
+### Agenda de baño/peluquería y recepción (010)
+
+La reserva se crea como cita de tipo `peluqueria`, con inicio y sin duración inventada
+(`fin: null`). Clínica y vacunación conservan fin obligatorio. Los selectores
+mascota/tutor admiten `linked_to` y filtran vínculos con `vigente_hasta IS NULL`.
+
+`POST /api/v1/resources/clinica/citas/:id/ingreso-peluqueria`, cuerpo `{}`, requiere
+`Idempotency-Key`, `If-Match`, `cita.update` y `servicio_peluqueria.create` en la sede.
+Crea recepción y actualiza llegada en una transacción, con hora del servidor. El
+consentimiento queda pendiente (no genera documento, firma ni aceptación).
+El responsable y teléfono se completan en Peluquería antes de iniciar el servicio;
+se conserva la validación de consentimiento firmado antes del inicio.
+
+Requiere migración `GroomingReservations1794900000000` antes de ejecutar esta versión.
+Ejecutarla con el procedimiento de migraciones existente y credenciales de propietario.
+No se ejecutan migraciones al iniciar la API. El rollback rechaza registros con fin,
+responsable o teléfono nulos: no inventa datos ni elimina reservas. No volver a una versión
+que asume esos campos obligatorios mientras existan registros pendientes: reconciliarlos
+explícitamente antes de revertir esquema y código.
+
+Prueba integral local (base temporal):
+`TEST_RELATION_BROWSER=true TEST_FRONTEND_URL=http://localhost:5174 npm run test:crud`.
+Incluye los navegadores de relaciones e ingreso; requiere frontend dev en ese puerto.

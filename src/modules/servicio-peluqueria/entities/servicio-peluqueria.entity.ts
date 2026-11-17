@@ -44,14 +44,14 @@ export class ServicioPeluqueriaEntity {
   @Column({ type: 'timestamptz', nullable: true })
   entregado_en!: Date | null;
 
-  @Column({ type: 'uuid', nullable: false })
-  responsable_id!: string;
+  @Column({ type: 'uuid', nullable: true })
+  responsable_id!: string | null;
 
   @Column({ type: 'uuid', nullable: false })
   tutor_contacto_id!: string;
 
-  @Column({ type: 'text', nullable: false })
-  telefono_contacto_servicio!: string;
+  @Column({ type: 'text', nullable: true })
+  telefono_contacto_servicio!: string | null;
 
   @Column({ type: 'boolean', nullable: false, default: () => 'true' })
   requiere_consentimiento!: boolean;

@@ -98,6 +98,20 @@ export class ResourceRulesService {
           );
     const merged = { ...old, ...data };
     if (
+      r.name === 'servicio_peluqueria' &&
+      ['en_servicio', 'finalizado', 'entregado'].includes(
+        String(merged.estado),
+      ) &&
+      (!merged.responsable_id || !merged.telefono_contacto_servicio)
+    )
+      throw new BadRequestException(
+        'Asigna responsable y teléfono de contacto antes de iniciar el servicio.',
+      );
+    if (r.name === 'cita' && merged.tipo !== 'peluqueria' && !merged.fin)
+      throw new BadRequestException(
+        'La hora de fin es obligatoria para citas clínicas y vacunales.',
+      );
+    if (
       ['cita', 'servicio_peluqueria'].includes(r.name) &&
       (!old ||
         ('mascota_id' in data && data.mascota_id !== old.mascota_id) ||
