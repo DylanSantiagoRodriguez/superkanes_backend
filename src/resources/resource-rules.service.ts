@@ -111,20 +111,22 @@ export class ResourceRulesService {
       throw new BadRequestException(
         'La hora de fin es obligatoria para citas clínicas y vacunales.',
       );
+    const tutorField =
+      r.name === 'atencion_clinica' ? 'tutor_presente_id' : 'tutor_contacto_id';
     if (
-      ['cita', 'servicio_peluqueria'].includes(r.name) &&
+      ['cita', 'servicio_peluqueria', 'atencion_clinica'].includes(r.name) &&
+      merged[tutorField] &&
       (!old ||
         ('mascota_id' in data && data.mascota_id !== old.mascota_id) ||
-        ('tutor_contacto_id' in data &&
-          data.tutor_contacto_id !== old.tutor_contacto_id))
+        (tutorField in data && data[tutorField] !== old[tutorField]))
     ) {
       const links: Row[] = await manager.query(
         'SELECT id FROM vet.mascota_tutor WHERE organizacion_id=$1 AND mascota_id=$2 AND tutor_id=$3 AND vigente_hasta IS NULL FOR SHARE',
-        [access.organizationId, merged.mascota_id, merged.tutor_contacto_id],
+        [access.organizationId, merged.mascota_id, merged[tutorField]],
       );
       if (!links.length)
         throw new BadRequestException(
-          'El tutor de contacto debe estar vinculado a la mascota.',
+          'El tutor debe estar vinculado a la mascota.',
         );
     }
     if (r.name === 'medicion_clinica') validateMeasurement(merged);

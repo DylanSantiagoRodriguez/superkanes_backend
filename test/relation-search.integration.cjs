@@ -51,6 +51,12 @@ module.exports = async function relationSearch({request,owner,org,otherOrg,ids,s
   const valid=(await request('POST','/cita',{...invalid,tutor_contacto_id:ids.tutor},201)).data;
   await request('PATCH',`/cita/${valid.id}`,{tutor_contacto_id:stranger.id},400,{'If-Match':String(valid.version)});
   await request('POST','/servicio_peluqueria',{mascota_id:outside.id,tutor_contacto_id:stranger.id,sede_id:ids.sede,fecha_servicio:'2027-08-01',responsable_id:ids.rootMembership,telefono_contacto_servicio:'1234567'},400);
+  const attention={mascota_id:outside.id,sede_id:ids.sede,fecha_atencion:'2027-08-01T09:00:00-05:00',profesional_id:ids.profesional,tutor_presente_id:stranger.id};
+  await request('POST','/atencion_clinica',attention,400);
+  await request('POST','/atencion_clinica/con-historia',{...attention,motivo_consulta:'Prueba de relación'},400);
+  const clinical=(await request('POST','/atencion_clinica',{...attention,tutor_presente_id:ids.tutor},201)).data;
+  await request('PATCH',`/atencion_clinica/${clinical.id}`,{tutor_presente_id:stranger.id},400,{'If-Match':String(clinical.version)});
+  await request('PATCH',`/atencion_clinica/${clinical.id}`,{tutor_presente_id:null},200,{'If-Match':String(clinical.version)});
   const otherPet=(await request('POST','/mascota',{codigo:'PAIR-OTHER',nombre:'Mascota de otro tutor',especie_id:ids.especie,tutor_principal_id:stranger.id},201)).data;
   if(process.env.TEST_BROWSER==='true'||process.env.TEST_RELATION_BROWSER==='true') {
     const result=await require('../../superkanes_frontend/test/quick-entry-browser.cjs')({base,adminToken,user,ids,outside,stranger,otherPet});
