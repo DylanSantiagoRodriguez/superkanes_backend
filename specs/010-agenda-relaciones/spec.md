@@ -47,3 +47,6 @@ con los mismos cuatro campos y luego se abre consentimiento/ingreso; si se cance
 ese paso, la reserva permanece en Agenda y no se crea una recepción incompleta.
 Validar filtrado de tutores con mascota seleccionada en estos recorridos. El usuario
 indica expresamente NO desplegar.
+
+Autorización posterior: el usuario solicitó desplegar este incremento. Despliegue
+realizado con respaldo previo y validaciones registradas en evidence.md.

@@ -63,3 +63,26 @@ Peluquería, y las opciones de tutor corresponden al resultado filtrado por la m
 seleccionada en la base local. Se cerraron formularios sin guardar datos de negocio.
 Se conservaron credenciales y datos locales. Esta activación reemplaza la limitación
 anterior de Docker local desactualizado; no constituye un despliegue productivo.
+
+## Despliegue productivo autorizado y verificado · 2026-11-17
+Publicado en https://superkanes.lat. Fuentes release/010-agenda-relaciones publicadas:
+backend c62076e y frontend 07dfa50 sobre los baselines productivos anteriores.
+Imágenes: superkanes-backend:ec2-agenda-c62076e (34b54e36ece5),
+superkanes-frontend:ec2-agenda-07dfa50 (d4a1089e7ee5).
+Respaldo privado PostgreSQL previo: /opt/superkanes/backups/010/before.dump;
+configuración previa environment.before y registro migration.log en ese directorio.
+Migración GroomingReservations1794900000000 aplicada por servicio migrate separado.
+Se recrearon solo backend/frontend; PostgreSQL, MinIO y Caddy permanecieron activos.
+
+Verificación release: build/lint, 26 unitarias, 4 e2e, 542 comprobaciones HTTP y
+Chromium con API/base efímera, incluyendo los accesos corregidos desde Peluquería
+y cambio de tipo en Programar cita, correctos.
+Verificación real: health/ready200 en ambos dominios, backend healthy, migración
+registrada, asset index-0XLAjbR9.js publicado, login visible, tema/persistencia y móvil
+sin errores JS. No se crearon registros clínicos ni se ingresó con una cuenta en
+producción; los flujos autenticados se validaron sobre la release antes de publicar.
+
+Imágenes anteriores retenidas: ec2-admin-d40d53e y ec2-sidebar-98c99d5. No ejecutar
+rollback ciego de esquema/código: la migración admite reservas sin fin y recepciones
+con datos pendientes. Reconciliar esos registros antes de volver a versiones que
+asumen campos obligatorios; el down rechaza datos pendientes para evitar pérdida.
