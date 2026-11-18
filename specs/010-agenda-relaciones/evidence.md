@@ -51,3 +51,15 @@ y Docker local localhost:5173 index-C23qP2uE.js, ambos anteriores al incremento.
 El usuario indicó expresamente no desplegar: no se actualizaron contenedores ni
 producción ni se ejecutaron migraciones sobre datos de trabajo. Navegadores de prueba
 en localhost:5174 se conectaron a API/base efímeras mediante el fixture.
+
+## Activación del entorno local para revisión
+Se actualizó el Docker local que sirve localhost:5173, después de respaldar la base
+local en /tmp/superkanes-local-backup/before-010.dump (archivo privado). Se construyeron
+backend, migrate y frontend, se ejecutaron migraciones locales y se recrearon solo
+backend/frontend. No se accedió ni modificó producción en esta activación.
+Chromium sin mocks, autenticado contra localhost:5173: login correcto, Nuevo registro
+ en Peluquería muestra cuatro campos, Programar cita cambia a cuatro campos al elegir
+Peluquería, y las opciones de tutor corresponden al resultado filtrado por la mascota
+seleccionada en la base local. Se cerraron formularios sin guardar datos de negocio.
+Se conservaron credenciales y datos locales. Esta activación reemplaza la limitación
+anterior de Docker local desactualizado; no constituye un despliegue productivo.
