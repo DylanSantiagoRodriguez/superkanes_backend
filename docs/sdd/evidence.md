@@ -70,3 +70,12 @@ SDD ya existentes. Los comandos de comprobación utilizan bash y Python; no nece
 Node. Las futuras verificaciones de la aplicación requieren Node 24.
 La evidencia histórica de cada incremento pertenece a los commits que identifica;
 no acredita que esos incrementos estén implementados en `main`.
+
+## Publicación remota
+
+El primer `git push -u origin docs/sdd-backend` fue rechazado con HTTP 403:
+la cuenta activa de Git era `T-SanZ`, sin acceso de escritura. El conector GitHub
+confirmó también `push: false`. `gh auth status` mostró una sesión ya configurada
+del propietario `DylanSantiagoRodriguez`. Se utiliza esa sesión exclusivamente en
+los procesos de publicación, sin cambiar la cuenta activa ni almacenar credenciales
+en archivos del repositorio.
