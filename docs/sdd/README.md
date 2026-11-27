@@ -50,6 +50,8 @@ de integración React se conserva en `superkanes_frontend/spec.md`, dentro del
 repositorio hermano, conforme a la constitución.
 
 ## Organización de los repositorios
+- [Especificación 007](../../specs/007-busqueda-documentos/spec.md), [plan](../../specs/007-busqueda-documentos/plan.md), [tareas](../../specs/007-busqueda-documentos/tasks.md)
+- [Evidencia](../../specs/007-busqueda-documentos/evidence.md) y [convergencia](../../specs/007-busqueda-documentos/converge.md)
 
 Clonar backend y frontend como carpetas hermanas, `superkanes_backend/` y
 `superkanes_frontend/`. Cada uno conserva su Git y remoto. No introducirlos en otro
@@ -81,6 +83,7 @@ git -C superkanes_frontend switch -c feature/mi-incremento
 ```
 
 Durante la adopción original del 17 de noviembre de 2026, los baselines fueron backend `8718c6e`, frontend `377a1b8` y
+En esta adopción los baselines fueron backend `8718c6e`, frontend `377a1b8` y
 respaldo documental local `1a45575`. Ambos repositorios de código ya tenían un commit
 local adicional a origin/main. La publicación del incremento debe excluir esos commits
 anteriores mediante ramas de revisión aisladas; no borrar el trabajo de las ramas locales.
@@ -139,6 +142,8 @@ Usar Node 24 y npm; `npm ci` en cada proyecto. Configurar variables privadas seg
 Backend: `npm run start:dev`; frontend: `npm run dev -- --host localhost --port 5173 --strictPort`.
 PostgreSQL y MinIO deben estar disponibles. Si la rama de aplicación dispone del Compose del backend, revisar sus variables
 y volúmenes antes de iniciarlo; esta entrega documental no incorpora ese Compose. Las migraciones usan el
+PostgreSQL y MinIO deben estar disponibles. El Compose del backend ofrece el entorno
+completo; revisar variables y volúmenes antes de iniciarlo. Las migraciones usan el
 proceso separado existente, no el arranque de HTTP. No ejecutar pruebas en producción.
 
 Desde backend:

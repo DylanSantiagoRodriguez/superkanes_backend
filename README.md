@@ -1,6 +1,7 @@
 # Superkanes Backend
 
 NestJS 11, TypeScript, Node.js 24 y PostgreSQL. Ver [constitución](CONSTITUCION.md) e [índice de requisitos, planes, tareas y flujo SDD](docs/sdd/README.md).
+NestJS 11, TypeScript, Node.js 24 y PostgreSQL. Ver [guía de arranque y SDD](docs/sdd/README.md).
 
 ## Estructura
 
@@ -160,7 +161,7 @@ En **Ver detalle** de una atención, **Leer historia** y **Editar historia** per
 
 Desde **Mascotas → Ver detalle → Abrir ficha clínica** se consultan antecedentes y se inicia una atención con paciente precargado. La consulta reúne notas SOAP, examen físico, mediciones con unidades controladas, diagnósticos, prescripciones, documentos, consentimientos y laboratorio. El profesional se toma de la sesión. El guardado de notas y detalles es transaccional; el cierre conserva un original inmutable. Una corrección copia los registros autorizados a una revisión vinculada y exige motivo.
 
-La especificación y matriz funcional canónicas están en [002-flujo-clinico](../document-management/specs/002-flujo-clinico/spec.md). La aplicación conserva el monolito y las entidades clínicas existentes. Las órdenes, resultados y eventos de laboratorio son un caso de uso específico, fuera del CRUD genérico.
+La especificación y matriz funcional canónicas están en [002-flujo-clinico](specs/002-flujo-clinico/spec.md). La aplicación conserva el monolito y las entidades clínicas existentes. Las órdenes, resultados y eventos de laboratorio son un caso de uso específico, fuera del CRUD genérico.
 
 ### Contratos incorporados
 
@@ -247,4 +248,14 @@ Se requiere MinIO y permisos `archivo.create/read`, además de los permisos clí
 
 Los documentos previos a esta función se conservan en su revisión. No se reescriben historias cerradas ni se afirma que ya estén archivadas. El siguiente guardado autorizado de un borrador con documento crea su archivo si falta. Recuperación: migración correctiva o respaldo coherente de PostgreSQL y MinIO; la reversión destructiva está bloqueada.
 
-La [especificación 003](../document-management/specs/003-documentos-paciente-minio/spec.md) contiene alcance y aceptación. Verificado con 25 pruebas unitarias, 4 pruebas HTTP de aplicación, compilación/lint y suite integrada de 423 comprobaciones HTTP más Chromium/MinIO reales: pegar formato, guardar/reabrir, descargar el archivo, permisos por sede/organización, hash, versiones, correcciones y rollback ante almacenamiento indisponible.
+La [especificación 003](specs/003-documentos-paciente-minio/spec.md) contiene alcance y aceptación. Verificado con 25 pruebas unitarias, 4 pruebas HTTP de aplicación, compilación/lint y suite integrada de 423 comprobaciones HTTP más Chromium/MinIO reales: pegar formato, guardar/reabrir, descargar el archivo, permisos por sede/organización, hash, versiones, correcciones y rollback ante almacenamiento indisponible.
+
+## Incremento SDD 007: búsqueda documental
+
+En Documentos del editor se puede buscar por el identificador UUID existente de una
+versión, completo o parcial (3–36 caracteres hexadecimales o guiones, sin distinguir
+mayúsculas). La búsqueda se ejecuta en servidor y conserva paciente, revisión, permisos
+y paginación. Limpiar restaura el listado; abrir y descargar mantienen su contrato.
+El GET documental admite `codigo` opcional; no hay migraciones ni dependencias nuevas.
+Desplegar backend antes de frontend. [Especificación](specs/007-busqueda-documentos/spec.md)
+y [flujo Codex/SDD](docs/sdd/README.md).
