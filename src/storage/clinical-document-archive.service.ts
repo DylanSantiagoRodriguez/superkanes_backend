@@ -75,7 +75,7 @@ export class ClinicalDocumentArchiveService {
     identity: Identity,
     org: string,
     patientId: string,
-    query: { after?: string; revision_id?: string },
+    query: { after?: string; revision_id?: string; codigo?: string },
   ) {
     return this.access.run(identity, org, async (manager, a) => {
       const params: unknown[] = [org, patientId];
@@ -104,6 +104,10 @@ export class ClinicalDocumentArchiveService {
       if (query.revision_id) {
         params.push(query.revision_id);
         filter += ` AND d.revision_id=$${params.length}::uuid`;
+      }
+      if (query.codigo) {
+        params.push(`%${query.codigo}%`);
+        filter += ` AND d.id::text ILIKE $${params.length}`;
       }
       const rows: Row[] = await manager.query(
         `SELECT d.*,f.nombre_original,f.sha256,f.tamano_bytes,r.numero AS numero_revision,r.estado AS estado_revision
