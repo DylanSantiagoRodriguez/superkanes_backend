@@ -79,3 +79,9 @@ confirmó también `push: false`. `gh auth status` mostró una sesión ya config
 del propietario `DylanSantiagoRodriguez`. Se utiliza esa sesión exclusivamente en
 los procesos de publicación, sin cambiar la cuenta activa ni almacenar credenciales
 en archivos del repositorio.
+
+La publicación con la sesión del propietario finalizó correctamente:
+`docs/sdd-backend` está en `origin` y se abrió el
+[PR #2](https://github.com/DylanSantiagoRodriguez/superkanes_backend/pull/2)
+en borrador dirigido a `main`. La fusión sigue pendiente. No se modificaron las
+ramas activas del workspace ni el frontend.
