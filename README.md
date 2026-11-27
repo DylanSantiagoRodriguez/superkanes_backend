@@ -1,6 +1,6 @@
 # Superkanes Backend
 
-NestJS 11, TypeScript, Node.js 24 y PostgreSQL. Ver [guía de arranque](../README.md).
+NestJS 11, TypeScript, Node.js 24 y PostgreSQL. Ver [constitución](CONSTITUCION.md) e [índice de requisitos, planes, tareas y flujo SDD](docs/sdd/README.md).
 
 ## Estructura
 

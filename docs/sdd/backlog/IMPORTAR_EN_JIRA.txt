@@ -1,0 +1,59 @@
+SUPERKANES — IMPORTACIÓN DEL BACKLOG EN JIRA
+
+Archivo: SUPERKANES_BACKLOG_JIRA.csv
+Contenido: 6 épicas y 36 elementos de trabajo (historias, tareas y un defecto), distribuidos en 3 sprints propuestos de 12 elementos cada uno.
+
+ALCANCE
+Es una reconstrucción organizada del trabajo realizado y revisado en el proyecto, presentada como backlog por solicitud del responsable. Todas las filas se importan en To Do / Por hacer. Ese estado es una decisión de organización en Jira: no significa que el código correspondiente esté por implementar.
+Los sprints son una agrupación propuesta, no fechas históricas ni compromisos de capacidad. No se inventan responsables, horas, puntos de historia o fechas.
+Los procesos aún pendientes (Redis, emisión de reportes, envío de comunicaciones, carga/análisis binario y captura de firmas) no se incluyen como entregas terminadas. Las historias de consulta de sus registros explican expresamente el límite existente.
+
+IMPORTACIÓN
+1. Usar un proyecto/espacio de Jira Software con un tablero Scrum.
+2. Usar el importador administrativo de CSV con soporte de jerarquías (Configuración > Sistema > Importación de sistemas externos, según la versión). La importación masiva simple no siempre permite conservar épicas y elementos hijos.
+3. Elegir el proyecto/espacio de destino y cargar el CSV con codificación UTF-8, separador coma y delimitador de texto comillas dobles.
+4. Mapear las columnas:
+   Work item ID -> ID del elemento / Issue ID (identificador externo de importación).
+   Work type -> Tipo: Epic, Story, Task y Bug, o sus equivalentes locales.
+   Parent -> Elemento padre / Parent.
+   Summary -> Resumen.
+   Description -> Descripción.
+   Priority -> Prioridad: High y Medium, o sus equivalentes locales.
+   Status -> Estado: To Do, mapeado al estado inicial Por hacer de tu flujo.
+   Labels -> Etiquetas.
+5. Usar tipos, estados y prioridades que existan en la configuración de destino; mapear sus equivalencias antes de confirmar. Si tu esquema exige un nombre de épica adicional, mapear también el título de la épica al campo exigido por ese importador.
+6. Revisar la vista previa: 42 elementos, 6 épicas y 36 hijos. Los padres aparecen primero y sus IDs se resuelven dentro del archivo. No mapear estos IDs como claves de incidencias existentes.
+7. Importar una sola vez. El archivo no tiene claves de Jira y repetir una importación de creación puede duplicar elementos.
+
+ORGANIZACIÓN EN TRES SPRINTS
+Crear estos sprints en el backlog sin iniciarlos; después asignar las historias, tareas y el defecto mediante sus etiquetas:
+
+Sprint 1 - Base técnica y acceso seguro
+Objetivo: entorno ejecutable, persistencia y acceso autenticado con aislamiento.
+Etiqueta: superkanes-sprint-1
+IDs de importación: 1001 a 1012.
+Épicas: Base técnica y reglas del proyecto; Identidad y acceso por organización.
+
+Sprint 2 - Dominio veterinario y API
+Objetivo: recursos del dominio, integridad, permisos y contratos comprobables.
+Etiqueta: superkanes-sprint-2
+IDs de importación: 1013 a 1024.
+Épicas: Gestión veterinaria y servicios; Contratos e integridad de la API.
+
+Sprint 3 - Integración web y validación
+Objetivo: pantallas conectadas, sesión persistente, formularios y validación integral.
+Etiqueta: superkanes-sprint-3
+IDs de importación: 1025 a 1036.
+Épicas: Espacio de trabajo conectado; Calidad funcional y experiencia de uso.
+
+Filtrar por la etiqueta de cada sprint dentro del proyecto de destino y asignar esos elementos al sprint correspondiente. Mantener las épicas fuera de los sprints. El orden sugerido de cada elemento figura en su descripción; ordenar el backlog con ese criterio, ya que el orden del CSV no garantiza el Rank de Jira.
+
+El CSV conserva la organización por sprint mediante Labels y Description. No crea por sí mismo los tres sprints. No incluye una columna Sprint con nombres o IDs inventados: el campo nativo puede exigir IDs reales del tablero. Si posteriormente se desea asignar los sprints durante una importación, primero deben existir en Jira y utilizarse sus IDs válidos.
+
+REFERENCIAS DEL FORMATO JIRA
+Preparación de CSV y jerarquías:
+https://support.atlassian.com/jira-software-cloud/docs/prepare-a-csv-file-for-import/
+Importación de CSV en un proyecto existente:
+https://support.atlassian.com/jira-software-cloud/docs/import-issues-into-an-existing-space-in-jira-using-csv/
+Identificadores del campo Sprint:
+https://support.atlassian.com/jira/kb/jira-csv-import-sprint-id-must-be-number/
