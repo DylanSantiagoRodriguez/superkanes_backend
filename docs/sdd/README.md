@@ -10,6 +10,46 @@ Por elección del equipo, **backend versiona toda la documentación SDD común**
 
 - [Constitución](../../.specify/memory/constitution.md)
 - [Instrucciones para Codex](../../AGENTS.md) y [skills oficiales](../../.agents/skills)
+- [Plantillas](../../.specify/templates), [scripts](../../.specify/scripts/bash) y [configuración de Spec Kit](spec-kit.md)
+- [Backlog Jira e instrucciones de importación](backlog/IMPORTAR_EN_JIRA.txt)
+- [Evidencia de organización y publicación documental](evidence.md)
+
+## Índice de requisitos, planes y tareas
+
+Los requisitos de cada incremento están en su `spec.md`. Esta tabla enumera los
+artefactos existentes; su presencia no acredita implementación, pruebas ni despliegue.
+Las evidencias históricas corresponden a las ramas y commits que identifican, no
+necesariamente al código de la rama desde la que se consulta este índice.
+
+| Incremento | Requisitos | Plan | Tareas | Evidencia |
+| --- | --- | --- | --- | --- |
+| 001-minio-historias | [spec.md](../../specs/001-minio-historias/spec.md) | No registrado | No registrado | No registrado |
+| 002-flujo-clinico | [spec.md](../../specs/002-flujo-clinico/spec.md) | No registrado | No registrado | No registrado |
+| 003-documentos-paciente-minio | [spec.md](../../specs/003-documentos-paciente-minio/spec.md) | No registrado | No registrado | No registrado |
+| 004-estetica-azul | [spec.md](../../specs/004-estetica-azul/spec.md) | No registrado | No registrado | No registrado |
+| 005-alta-contextual | [spec.md](../../specs/005-alta-contextual/spec.md) | No registrado | No registrado | No registrado |
+| 006-perfiles | [spec.md](../../specs/006-perfiles/spec.md) | No registrado | No registrado | No registrado |
+| 007-busqueda-documentos | [spec.md](../../specs/007-busqueda-documentos/spec.md) | [plan.md](../../specs/007-busqueda-documentos/plan.md) | [tasks.md](../../specs/007-busqueda-documentos/tasks.md) | [evidence.md](../../specs/007-busqueda-documentos/evidence.md) |
+| 008-turquesa-darkmode | [spec.md](../../specs/008-turquesa-darkmode/spec.md) | [plan.md](../../specs/008-turquesa-darkmode/plan.md) | [tasks.md](../../specs/008-turquesa-darkmode/tasks.md) | [evidence.md](../../specs/008-turquesa-darkmode/evidence.md) |
+| 009-admin-sidebar-theme | [spec.md](../../specs/009-admin-sidebar-theme/spec.md) | [plan.md](../../specs/009-admin-sidebar-theme/plan.md) | [tasks.md](../../specs/009-admin-sidebar-theme/tasks.md) | [evidence.md](../../specs/009-admin-sidebar-theme/evidence.md) |
+| 010-agenda-relaciones | [spec.md](../../specs/010-agenda-relaciones/spec.md) | [plan.md](../../specs/010-agenda-relaciones/plan.md) | [tasks.md](../../specs/010-agenda-relaciones/tasks.md) | [evidence.md](../../specs/010-agenda-relaciones/evidence.md) |
+| 011-login-responsive | [spec.md](../../specs/011-login-responsive/spec.md) | No registrado | No registrado | [evidence.md](../../specs/011-login-responsive/evidence.md) |
+| 012-relaciones-formularios | [spec.md](../../specs/012-relaciones-formularios/spec.md) | No registrado | No registrado | [evidence.md](../../specs/012-relaciones-formularios/evidence.md) |
+
+001–006 se conservan como antecedentes. En 011 y 012 no se registraron `plan.md`
+ni `tasks.md`; esta organización no reconstruye aprobaciones ni marca tareas como
+terminadas. Antes de continuar esos incrementos, completar los artefactos faltantes.
+007 incluye además [contratos](../../specs/007-busqueda-documentos/contracts/http.md),
+[análisis](../../specs/007-busqueda-documentos/analysis.md),
+[checklist](../../specs/007-busqueda-documentos/checklist.md) y
+[convergencia](../../specs/007-busqueda-documentos/converge.md).
+
+El backlog Jira es una reconstrucción histórica para importación; sus estados
+«To Do» no representan el estado de las tareas de Spec Kit. La especificación previa
+de integración React se conserva en `superkanes_frontend/spec.md`, dentro del
+repositorio hermano, conforme a la constitución.
+
+## Organización de los repositorios
 - [Especificación 007](../../specs/007-busqueda-documentos/spec.md), [plan](../../specs/007-busqueda-documentos/plan.md), [tareas](../../specs/007-busqueda-documentos/tasks.md)
 - [Evidencia](../../specs/007-busqueda-documentos/evidence.md) y [convergencia](../../specs/007-busqueda-documentos/converge.md)
 
@@ -23,6 +63,13 @@ referencias antiguas. La raíz conserva en Git el baseline documental y enlaces;
 no se publica ese Git en el remoto del backend ni se necesita un tercer remoto.
 Las especificaciones 001–006 son antecedentes conservados, no entregas nuevas.
 
+## Publicación documental y estado de implementación
+
+La rama `docs/sdd-backend` parte de `main` e incorpora la documentación y las
+herramientas SDD existentes en `feature/010-agenda-relaciones` (`d721102`), sin
+incorporar su código de aplicación. Publicar esta rama no equivale a fusionarla
+en `main`. Las pruebas históricas deben leerse con sus referencias de commit.
+
 ## Paso 1: proteger y verificar el estado actual
 
 Desde la carpeta padre de los dos repositorios:
@@ -35,6 +82,7 @@ git -C superkanes_backend switch -c feature/mi-incremento
 git -C superkanes_frontend switch -c feature/mi-incremento
 ```
 
+Durante la adopción original del 17 de noviembre de 2026, los baselines fueron backend `8718c6e`, frontend `377a1b8` y
 En esta adopción los baselines fueron backend `8718c6e`, frontend `377a1b8` y
 respaldo documental local `1a45575`. Ambos repositorios de código ya tenían un commit
 local adicional a origin/main. La publicación del incremento debe excluir esos commits
@@ -92,6 +140,8 @@ no modifica datos y no introduce dependencias. Cambiar primero la spec si cambia
 Usar Node 24 y npm; `npm ci` en cada proyecto. Configurar variables privadas según
 `.env.example` y el [README backend](../../README.md). Nunca copiar secretos a specs.
 Backend: `npm run start:dev`; frontend: `npm run dev -- --host localhost --port 5173 --strictPort`.
+PostgreSQL y MinIO deben estar disponibles. Si la rama de aplicación dispone del Compose del backend, revisar sus variables
+y volúmenes antes de iniciarlo; esta entrega documental no incorpora ese Compose. Las migraciones usan el
 PostgreSQL y MinIO deben estar disponibles. El Compose del backend ofrece el entorno
 completo; revisar variables y volúmenes antes de iniciarlo. Las migraciones usan el
 proceso separado existente, no el arranque de HTTP. No ejecutar pruebas en producción.

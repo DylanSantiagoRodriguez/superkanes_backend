@@ -1,0 +1,349 @@
+﻿"Work item ID","Work type","Parent","Summary","Description","Priority","Status","Labels"
+"100","Epic","","Base técnica y reglas del proyecto","Objetivo: Establecer el entorno local, la persistencia y las reglas comunes de implementación.
+
+Agrupación propuesta: Sprint 1 - Base técnica y acceso seguro.
+El alcance se completa mediante las historias y tareas hijas.","High","To Do","superkanes-epica"
+"200","Epic","","Identidad y acceso por organización","Objetivo: Permitir acceso autenticado y separar la información y las operaciones de cada organización.
+
+Agrupación propuesta: Sprint 1 - Base técnica y acceso seguro.
+El alcance se completa mediante las historias y tareas hijas.","High","To Do","superkanes-epica"
+"300","Epic","","Gestión veterinaria y servicios","Objetivo: Organizar la gestión de pacientes, tutores, atención clínica, vacunación y peluquería.
+
+Agrupación propuesta: Sprint 2 - Dominio veterinario y API.
+El alcance se completa mediante las historias y tareas hijas.","High","To Do","superkanes-epica"
+"400","Epic","","Contratos e integridad de la API","Objetivo: Garantizar contratos consistentes, integridad de los datos y escrituras controladas.
+
+Agrupación propuesta: Sprint 2 - Dominio veterinario y API.
+El alcance se completa mediante las historias y tareas hijas.","High","To Do","superkanes-epica"
+"500","Epic","","Espacio de trabajo conectado","Objetivo: Sustituir la demostración por pantallas que consulten y gestionen registros reales.
+
+Agrupación propuesta: Sprint 3 - Integración web y validación.
+El alcance se completa mediante las historias y tareas hijas.","High","To Do","superkanes-epica"
+"600","Epic","","Calidad funcional y experiencia de uso","Objetivo: Verificar endpoints, permisos, formularios, sesión y presentación adaptable.
+
+Agrupación propuesta: Sprint 3 - Integración web y validación.
+El alcance se completa mediante las historias y tareas hijas.","High","To Do","superkanes-epica"
+"1001","Task","100","Formalizar las reglas y el alcance de SUPERKANES","Establecer las decisiones comunes del proyecto y el alcance de la integración web.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 01.
+
+Criterios de aceptación:
+1. Definir React y TypeScript para la interfaz, NestJS para la API y PostgreSQL con TypeORM para persistencia.
+2. Documentar reglas de acceso, historial clínico, validaciones y control de cambios.
+3. Distinguir las funcionalidades implementadas de los procesos pendientes.","High","To Do","superkanes-sprint-1"
+"1002","Task","100","Preparar el entorno de ejecución con Node.js 24","Disponer de un entorno compatible para ejecutar frontend y backend.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 02.
+
+Criterios de aceptación:
+1. Instalar las dependencias de ambos proyectos con sus versiones bloqueadas.
+2. Compilar frontend y backend sin errores de TypeScript.
+3. Iniciar ambos servicios y comprobar su disponibilidad HTTP.","High","To Do","superkanes-sprint-1"
+"1003","Task","100","Configurar PostgreSQL persistente y el backend en Docker","Mantener una instancia local independiente para la API y sus datos.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 03.
+
+Criterios de aceptación:
+1. Usar servicios separados para la API y PostgreSQL.
+2. Conservar los datos de PostgreSQL en un volumen persistente.
+3. Configurar conexiones y credenciales mediante variables de entorno sin incluir secretos en la interfaz.","High","To Do","superkanes-sprint-1"
+"1004","Task","100","Ejecutar migraciones TypeORM con credenciales separadas","Inicializar el esquema mediante un proceso de migración independiente de la API.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 04.
+
+Criterios de aceptación:
+1. Aplicar las migraciones versionadas desde un contenedor de ejecución separado.
+2. Mantener synchronize y migrationsRun desactivados en el proceso HTTP.
+3. Usar una cuenta limitada para la API y credenciales de propietario únicamente para administración y migraciones.","High","To Do","superkanes-sprint-1"
+"1005","Task","100","Configurar salud del servicio y documentación de endpoints","Facilitar la comprobación del arranque y la consulta del contrato HTTP.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 05.
+
+Criterios de aceptación:
+1. Disponer de una comprobación de vida del proceso.
+2. Verificar conexión y disponibilidad del esquema en la comprobación de preparación.
+3. Publicar OpenAPI y Swagger en el entorno local autorizado.","Medium","To Do","superkanes-sprint-1"
+"1006","Story","200","Iniciar sesión con credenciales de equipo","Como integrante de una clínica, quiero autenticarme para acceder al espacio de trabajo.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 06.
+
+Criterios de aceptación:
+1. Validar correo y contraseña mediante el endpoint de acceso.
+2. Proteger las contraseñas con Argon2id y emitir tokens de acceso con vencimiento.
+3. Mostrar mensajes de acceso inválido sin revelar si una cuenta existe.","High","To Do","superkanes-sprint-1"
+"1007","Story","200","Administrar sesiones revocables y renovación segura","Como usuario, quiero mantener una sesión controlada y poder cerrarla.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 07.
+
+Criterios de aceptación:
+1. Entregar la renovación web mediante cookie HttpOnly con protección CSRF.
+2. Rotar los tokens de renovación y revocar la sesión ante reutilización.
+3. Invalidar la sesión al cerrar el acceso y rechazar tokens vencidos o revocados.","High","To Do","superkanes-sprint-1"
+"1008","Story","200","Restringir el acceso según organización y membresía","Como organización, quiero que solamente mis miembros habilitados accedan a mis registros.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 08.
+
+Criterios de aceptación:
+1. Comprobar organización activa y membresía habilitada en las solicitudes.
+2. Obtener las organizaciones disponibles desde la identidad autenticada.
+3. Rechazar identificadores de organización que no autoricen el acceso.","High","To Do","superkanes-sprint-1"
+"1009","Story","200","Aplicar permisos por acción y sede","Como administrador, quiero limitar las operaciones del personal según su rol y alcance.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 09.
+
+Criterios de aceptación:
+1. Verificar permisos de consulta, alta, modificación y baja en el servidor.
+2. Respetar los alcances de organización y sede, incluyendo los recursos relacionados.
+3. Impedir que un usuario eleve sus propios permisos o conceda permisos superiores a los suyos.","High","To Do","superkanes-sprint-1"
+"1010","Task","200","Aislar datos mediante RLS y transacciones con contexto","Evitar cruces de información entre clínicas y fugas de contexto entre peticiones.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 10.
+
+Criterios de aceptación:
+1. Establecer organización, usuario y petición dentro de la transacción.
+2. Usar el EntityManager asociado a esa transacción.
+3. Comprobar aislamiento de lectura y escritura y limpieza del contexto tras confirmación o reversión.","High","To Do","superkanes-sprint-1"
+"1011","Task","200","Aprovisionar una cuenta administrativa local","Disponer de una cuenta inicial con membresía y permisos para revisar la aplicación.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 11.
+
+Criterios de aceptación:
+1. Crear una organización, un usuario y una asignación inicial de permisos.
+2. Aplicar la política de contraseñas al aprovisionar.
+3. Conservar las credenciales locales fuera de los archivos destinados a distribución.","Medium","To Do","superkanes-sprint-1"
+"1012","Task","200","Verificar controles de autenticación y protección del acceso","Comprobar la seguridad funcional del ciclo de autenticación.
+
+Sprint propuesto: Sprint 1 - Base técnica y acceso seguro.
+Orden sugerido del backlog: 12.
+
+Criterios de aceptación:
+1. Verificar credenciales, revocación, rotación concurrente y cookies.
+2. Comprobar los endpoints de cambio y recuperación de contraseña sin asumir una interfaz guiada terminada.
+3. Validar límites de intentos y ejecutar las pruebas en una base temporal que se elimine al finalizar.","High","To Do","superkanes-sprint-1"
+"1013","Story","300","Gestionar tutores, contactos y preferencias","Como recepción, quiero mantener los datos de las personas responsables de cada mascota.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 13.
+
+Criterios de aceptación:
+1. Consultar y gestionar tutores y teléfonos según permisos.
+2. Registrar preferencias de comunicación conservando sus restricciones de modificación.
+3. Validar los datos y las relaciones dentro de la organización.","High","To Do","superkanes-sprint-2"
+"1014","Story","300","Registrar mascotas con tutor principal","Como recepción, quiero dar de alta una mascota con su identificación y responsable.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 14.
+
+Criterios de aceptación:
+1. Validar código, nombre, especie y tutor principal en el alta.
+2. Crear la mascota y su vínculo principal en una misma transacción.
+3. Impedir mascotas sin el vínculo principal requerido y referencias de otra organización.","High","To Do","superkanes-sprint-2"
+"1015","Story","300","Transferir el tutor principal con historial","Como personal autorizado, quiero cambiar al responsable principal sin perder los vínculos anteriores.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 15.
+
+Criterios de aceptación:
+1. Usar el endpoint específico de transferencia con control de versión.
+2. Validar un tutor diferente y la fecha efectiva según la zona horaria de la clínica.
+3. Cerrar la vigencia anterior y mantener exactamente un vínculo principal abierto.","High","To Do","superkanes-sprint-2"
+"1016","Story","300","Gestionar citas y programación de recordatorios","Como recepción, quiero registrar citas por mascota, servicio, sede y contacto.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 16.
+
+Criterios de aceptación:
+1. Validar fechas, relaciones y estados permitidos de las citas.
+2. Permitir consultar, programar y cancelar los recordatorios según su contrato.
+3. Identificar que el envío automático de comunicaciones requiere un proceso adicional.","High","To Do","superkanes-sprint-2"
+"1017","Story","300","Gestionar atención e historial clínico","Como profesional, quiero registrar la atención conservando autoría e integridad del historial.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 17.
+
+Criterios de aceptación:
+1. Gestionar atenciones, revisiones, secciones, mediciones y diagnósticos conforme a sus contratos.
+2. Verificar autoría profesional y exigir una revisión cerrada antes de cerrar la atención.
+3. Conservar revisiones cerradas y validar contenido estructurado contra plantillas publicadas.","High","To Do","superkanes-sprint-2"
+"1018","Story","300","Gestionar vacunaciones y pendientes vacunales","Como profesional, quiero registrar vacunas y consultar los pendientes del paciente.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 18.
+
+Criterios de aceptación:
+1. Validar mascota, vacuna, profesional y sede de una vacunación interna.
+2. Permitir anulación con motivo y evitar sobrescribir los datos clínicos registrados.
+3. Controlar los vínculos con pendientes cumplidos antes de permitir una anulación.","High","To Do","superkanes-sprint-2"
+"1019","Story","300","Gestionar peluquería y consentimientos registrados","Como personal de peluquería, quiero gestionar servicios y consultar su documentación.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 19.
+
+Criterios de aceptación:
+1. Registrar servicios, conceptos y estados operativos permitidos.
+2. Validar plantillas publicadas y documentos disponibles en los consentimientos.
+3. Consultar firmas y adjuntos existentes sin simular captura de firmas ni carga binaria.","Medium","To Do","superkanes-sprint-2"
+"1020","Story","300","Consultar catálogos, prescripciones y trazabilidad","Como personal autorizado, quiero usar catálogos comunes y consultar evidencias de la operación.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 20.
+
+Criterios de aceptación:
+1. Gestionar catálogos, prescripciones y sus conceptos respetando autoría y relaciones.
+2. Consultar reportes emitidos, auditoría y eventos de salida como recursos de solo lectura.
+3. Cubrir los 47 recursos existentes sin confundir registros de metadatos con procesos completos.","Medium","To Do","superkanes-sprint-2"
+"1021","Task","400","Publicar el catálogo autorizado para formularios","Entregar a la interfaz un contrato que represente campos y acciones disponibles.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 21.
+
+Criterios de aceptación:
+1. Informar campos obligatorios, valores por defecto, referencias y campos gestionados por el servidor.
+2. Incluir transiciones, campos inmutables y permisos efectivos por acción.
+3. Incluir tutor_principal_id como entrada obligatoria de la creación de mascotas.","High","To Do","superkanes-sprint-2"
+"1022","Task","400","Aplicar idempotencia y control de concurrencia","Evitar altas duplicadas y modificaciones que sobrescriban cambios ajenos.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 22.
+
+Criterios de aceptación:
+1. Exigir Idempotency-Key en las altas y conservar el resultado de la misma solicitud.
+2. Exigir If-Match en modificaciones y bajas.
+3. Devolver 412 ante versiones desactualizadas y 428 cuando falta la precondición requerida.","High","To Do","superkanes-sprint-2"
+"1023","Task","400","Normalizar validaciones y errores de la API","Comunicar rechazos controlados sin exponer información técnica sensible.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 23.
+
+Criterios de aceptación:
+1. Validar entradas, enumeraciones, formatos y relaciones mediante DTO y reglas de dominio.
+2. Rechazar campos no admitidos y asignaciones de datos controlados por el servidor.
+3. Traducir fallos de integridad y disponibilidad a códigos HTTP y mensajes seguros.","High","To Do","superkanes-sprint-2"
+"1024","Task","400","Verificar contratos y comportamiento de los recursos","Comprobar los endpoints contra datos reales en una base temporal.
+
+Sprint propuesto: Sprint 2 - Dominio veterinario y API.
+Orden sugerido del backlog: 24.
+
+Criterios de aceptación:
+1. Consultar los 47 recursos y probar altas de los 44 tipos que admiten creación.
+2. Contrastar campos obligatorios del catálogo con los contratos de OpenAPI.
+3. Verificar permisos, aislamiento, historial, idempotencia y concurrencia; eliminar la base de prueba al terminar.","High","To Do","superkanes-sprint-2"
+"1025","Story","500","Restaurar y renovar la sesión desde el frontend","Como usuario, quiero recargar la página sin volver a ingresar mientras mi sesión sea válida.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 25.
+
+Criterios de aceptación:
+1. Restaurar la sesión mediante la cookie de renovación y conservar el token de acceso solo en memoria.
+2. Renovar antes del vencimiento y compartir una única rotación entre solicitudes simultáneas.
+3. Volver al acceso cuando la sesión deje de ser válida y gestionar el cierre de una sesión ya revocada.","High","To Do","superkanes-sprint-3"
+"1026","Story","500","Seleccionar organización y navegar por módulos reales","Como usuario, quiero trabajar sobre la organización elegida con opciones acordes a mis permisos.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 26.
+
+Criterios de aceptación:
+1. Mostrar solamente organizaciones autorizadas y limpiar las vistas al cambiar de organización.
+2. Agrupar las 47 secciones en agenda, mascotas, historia clínica, peluquería, vacunación, reportes y configuración.
+3. Ocultar los recursos que no puedan consultarse y sustituir las vistas demostrativas.","High","To Do","superkanes-sprint-3"
+"1027","Story","500","Consultar listas, detalles y relaciones","Como usuario, quiero revisar registros reales y localizar información en las listas.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 27.
+
+Criterios de aceptación:
+1. Consultar páginas mediante cursor, con controles de avance y retroceso.
+2. Buscar dentro de la página y filtrar estados cuando el recurso lo permita.
+3. Mostrar detalles y nombres de relaciones junto a estados de carga, vacío y error.","High","To Do","superkanes-sprint-3"
+"1028","Story","500","Crear y editar registros con formularios de la API","Como usuario autorizado, quiero guardar datos utilizando los campos y tipos correctos.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 28.
+
+Criterios de aceptación:
+1. Generar controles a partir del catálogo y seleccionar relaciones consultables de la organización.
+2. Excluir campos del servidor y relaciones inmutables de la edición.
+3. Conservar decimales, enviar fechas con zona horaria y prevenir envíos duplicados.","High","To Do","superkanes-sprint-3"
+"1029","Story","500","Confirmar bajas y resolver conflictos de edición","Como usuario, quiero conocer el efecto de una baja y conservar cambios concurrentes.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 29.
+
+Criterios de aceptación:
+1. Distinguir eliminación, cancelación y desactivación antes de solicitar confirmación.
+2. Enviar la versión consultada para modificar o retirar registros.
+3. Explicar el rechazo 412 y bloquear un nuevo guardado hasta recargar y revisar los datos.","High","To Do","superkanes-sprint-3"
+"1030","Story","500","Conectar alta de mascotas y cambio de tutor en la interfaz","Como recepción, quiero realizar ambos procesos desde el espacio de trabajo.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 30.
+
+Criterios de aceptación:
+1. Exigir la selección de tutor principal en el formulario de alta.
+2. Ofrecer el cambio de tutor mediante un formulario conectado al endpoint específico.
+3. Actualizar la vista tras guardar y conservar la historia de los vínculos.","High","To Do","superkanes-sprint-3"
+"1031","Story","500","Mostrar un resumen real y límites de cada proceso","Como usuario, quiero interpretar correctamente los indicadores y las operaciones disponibles.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 31.
+
+Criterios de aceptación:
+1. Calcular las tarjetas a partir de registros accesibles de la organización.
+2. Indicar que existen más páginas sin presentar una página parcial como total exacto.
+3. Explicar los límites de reportes, comunicaciones, archivos y firmas sin simular operaciones.","Medium","To Do","superkanes-sprint-3"
+"1032","Bug","600","Corregir textos e iconos dañados del layout","Eliminar caracteres incorrectos y etiquetas inconsistentes del espacio de trabajo.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 32.
+
+Criterios de aceptación:
+1. Mostrar textos en español con tildes y símbolos legibles.
+2. Usar etiquetas que correspondan con los estados y operaciones del backend.
+3. Eliminar textos y pantallas ficticias reemplazados por la integración real.","Medium","To Do","superkanes-sprint-3"
+"1033","Task","600","Validar layout adaptable y navegación por teclado","Garantizar una presentación utilizable en escritorio, tablet y móvil.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 33.
+
+Criterios de aceptación:
+1. Comprobar anchos de 375, 768 y 1440 píxeles sin desbordamiento horizontal de la página.
+2. Permitir desplazamiento dentro de las tablas y acceso a formularios y acciones.
+3. Comprobar etiquetas, foco, cierre de diálogos y navegación por teclado.","High","To Do","superkanes-sprint-3"
+"1034","Task","600","Verificar los módulos y la sesión en navegador","Comprobar los flujos de usuario contra la API en ejecución.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 34.
+
+Criterios de aceptación:
+1. Recorrer las 47 secciones sin errores inesperados de API o JavaScript.
+2. Verificar alta y edición de tutores, paginación y bajas confirmadas.
+3. Probar recarga de sesión, cierre de sesión y rechazo de ediciones concurrentes.","High","To Do","superkanes-sprint-3"
+"1035","Task","600","Verificar permisos y separación de organizaciones en la interfaz","Confirmar que la presentación respeta las restricciones del servidor.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 35.
+
+Criterios de aceptación:
+1. Cambiar entre dos organizaciones y comprobar que no se mezclan registros.
+2. Validar una cuenta de solo lectura sin botones de alta, edición ni baja.
+3. Probar alta y transferencia de mascota con datos sintéticos y retirar la base temporal.","High","To Do","superkanes-sprint-3"
+"1036","Task","600","Cerrar validación técnica y actualizar documentación","Dejar operativos los servicios y documentar el comportamiento entregado.
+
+Sprint propuesto: Sprint 3 - Integración web y validación.
+Orden sugerido del backlog: 36.
+
+Criterios de aceptación:
+1. Ejecutar compilación y lint de frontend y backend y las pruebas unitarias, HTTP y de integración pertinentes.
+2. Actualizar la especificación y las guías con el alcance real de las pantallas.
+3. Comprobar disponibilidad final de frontend, API y base de datos y retirar los datos sintéticos de prueba.","Medium","To Do","superkanes-sprint-3"
